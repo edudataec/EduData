@@ -1,0 +1,5 @@
+#reciente-list-cont{
+    max-height: 550px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}

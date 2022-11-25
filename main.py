@@ -5,10 +5,43 @@ import plotly.express as px
 import pandas as pd
 import webview
 
-app = Dash(__name__, external_stylesheets=["assets/css/bootstrap.min.css"], assets_folder='assets', assets_external_path="",
+#Dummy recientes
+proyectos_recientes = [
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2},
+    {"name": "Dashboard1", "dias":2}
+]
+
+app = Dash(__name__, external_stylesheets=["assets/css/bootstrap.min.css", "assets/css/style.css"], assets_folder='assets', assets_external_path="",
              assets_url_path="/assets", include_assets_files=True, serve_locally=True)
 
-tab_content1 = dbc.Container("tab1")
+tab_content1 = dbc.Container([
+    dbc.ListGroup(
+        [
+            
+        ],
+        id="reciente-list-cont",
+        className="mt-3 mb-3"
+    )
+])
 tab_content2 = dbc.Container("tab2")
 
 app.layout = html.Div(children=[
@@ -49,6 +82,22 @@ def switch_tab(at):
         return tab_content1
     elif at == "plantillas":
         return tab_content2
+
+#Lista Recientes callback
+@app.callback(Output("reciente-list-cont", "children"), [Input("tabs", "active_tab")])
+def update_recientes_list(x):
+    list_items = []
+    for proyecto in proyectos_recientes:
+        item = dbc.ListGroupItem(
+            dbc.Row(
+                [
+                    dbc.Col(proyecto["name"], width=10, lg=10, md=9, sm=8),
+                    dbc.Col("Hace " + str(proyecto["dias"]) + " días", width=2, lg=2, md=3, sm=4)
+                ]
+            )
+        )
+        list_items.append(item)
+    return list_items
 
 def run_app():
     app.run_server(port=8050, debug=False)
