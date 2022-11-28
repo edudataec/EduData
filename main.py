@@ -56,7 +56,146 @@ tab_content1 = dbc.Container([
         className="mb-3"
     )
 ])
-tab_content2 = dbc.Container("tab2")
+tab_content2 = dbc.Container(
+    dbc.Row(
+        [
+            dbc.Col(
+                [
+                    html.Div(
+                        html.Div(
+                            [
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(dbc.Row("Análisis general de curso", justify="center", className="card-title")),
+                                        dbc.CardImg(src="/assets/imgs/plantilla_img1.PNG", top=False)
+                                    ],
+                                    class_name="flip-card-front", color="primary", inverse=True
+                                ),
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(dbc.Row("Análisis general de curso", justify="center", className="card-title")),
+                                        dbc.CardBody(
+                                            [
+                                                html.P("Este dashboard es útil para realizar seguimiento de las calificaciones de todo un curso.", className="card-text"),
+                                                html.P("Contiene:", className="card-text"),
+                                                html.P("-Gráfico de líneas", className="card-text"),
+                                                html.P("-Gráfico de dispersión", className="card-text"),
+                                                html.P("-Gráfico de barras", className="card-text")
+                                            ], 
+                                            style={"text-align":"start"}
+                                        )
+                                    ],
+                                    class_name="flip-card-back"
+                                ),
+                            ],
+                            className="flip-card-inner"
+                        ),
+                        className="mb-3 flip-card"
+                    ),
+                    html.Div(
+                        html.Div(
+                            [
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(dbc.Row("Desempeño histórico de materia", justify="center", className="card-title")),
+                                        dbc.CardImg(src="/assets/imgs/plantilla_img3.PNG", top=False)
+                                    ],
+                                    class_name="flip-card-front", color="primary", inverse=True
+                                ),
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(dbc.Row("Desempeño histórico de materia", justify="center", className="card-title")),
+                                        dbc.CardBody(
+                                            [
+                                                html.P("Este dashboard es útil para realizar seguimiento de las calificaciones de una materia a lo largo de varios años.", className="card-text"),
+                                                html.P("Contiene:", className="card-text"),
+                                                html.P("-Gráfico de líneas", className="card-text"),
+                                                html.P("-Gráfico de barras", className="card-text"),
+                                                html.P("-Histograma", className="card-text")
+                                            ], 
+                                            style={"text-align":"start"}
+                                        )
+                                    ],
+                                    class_name="flip-card-back"
+                                ),
+                            ],
+                            className="flip-card-inner"
+                        ),
+                        className="mb-3 flip-card"
+                    ),
+                ]
+            ),
+            dbc.Col(
+                [
+                   html.Div(
+                        html.Div(
+                            [
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(dbc.Row("Desempeño individual de estudiantes", justify="center", className="card-title")),
+                                        dbc.CardImg(src="/assets/imgs/plantilla_img2.PNG", top=False)
+                                    ],
+                                    class_name="flip-card-front", color="primary", inverse=True
+                                ),
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(dbc.Row("Desempeño individual de estudiantes", justify="center", className="card-title")),
+                                        dbc.CardBody(
+                                            [
+                                                html.P("Este dashboard es útil para realizar seguimiento de cada estudiante durante el semestre.", className="card-text"),
+                                                html.P("Contiene:", className="card-text"),
+                                                html.P("-Gráfico de líneas", className="card-text"),
+                                                html.P("-Pie chart", className="card-text"),
+                                                html.P("-Gráfico de barras", className="card-text")
+                                            ], 
+                                            style={"text-align":"start"}
+                                        )
+                                    ],
+                                    class_name="flip-card-back"
+                                ),
+                            ],
+                            className="flip-card-inner"
+                        ),
+                        className="mb-3 flip-card"
+                    ),
+                    html.Div(
+                        html.Div(
+                            [
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(dbc.Row("Desempeño de estudiantes por carrera", justify="center", className="card-title")),
+                                        dbc.CardImg(src="/assets/imgs/plantilla_img4.PNG", top=False)
+                                    ],
+                                    class_name="flip-card-front", color="primary", inverse=True
+                                ),
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(dbc.Row("Desempeño de estudiantes por carrera", justify="center", className="card-title")),
+                                        dbc.CardBody(
+                                            [
+                                                html.P("Este dashboard es útil para realizar seguimiento del desempeño de estudiantes de distintas carreras en una materia", className="card-text"),
+                                                html.P("Contiene:", className="card-text"),
+                                                html.P("-Gráfico de líneas", className="card-text"),
+                                                html.P("-Gráfico de dispersión", className="card-text"),
+                                                html.P("-Gráfico de barras", className="card-text"),
+                                                html.P("-Gráfico de burbujas", className="card-text")
+                                            ], 
+                                            style={"text-align":"start"}
+                                        )
+                                    ],
+                                    class_name="flip-card-back"
+                                ),
+                            ],
+                            className="flip-card-inner"
+                        ),
+                        className="mb-3 flip-card"
+                    ),
+                ]
+            )
+        ],
+        className="m-3"
+    )
+)
 
 app.layout = html.Div(children=[
     dbc.Navbar(

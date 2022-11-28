@@ -3,3 +3,124 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }
+
+.flip-card {
+    background-color: transparent;
+    perspective: 1000px; /* Remove this if you don't want the 3D effect */
+  }
+  
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+  }
+  
+  .flip-card:hover .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+  
+  .flip-card-front, .flip-card-back {
+    position: absolute;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  
+  .flip-card-back {
+    transform: rotateY(180deg);
+  }
+
+
+@media (min-width: 576px) { 
+    .card-title{
+        font-size: 12px;
+    }
+
+    .card-text{
+        font-size: 8px;
+        margin-bottom: 0.5rem;
+    }
+
+    .flip-card {
+        height: 175px;
+    }
+
+    .flip-card-front, .flip-card-back {
+        height: 175px;
+    }
+}
+
+@media (min-width: 768px) { 
+    .card-title{
+        font-size: 15px;
+    }
+    
+    .card-text{
+        font-size: 11px;
+        margin-bottom: 0.5rem;
+    }
+
+    .flip-card {
+        height: 245px;
+    }
+
+    .flip-card-front, .flip-card-back {
+        height: 245px;
+    }
+}
+
+@media (min-width: 992px) {
+    .card-title{
+        font-size: 17px;
+    }
+ 
+    .card-text{
+        font-size: 15px;
+    }
+
+    .flip-card {
+        height: 325px;
+    }
+
+    .flip-card-front, .flip-card-back {
+        height: 325px;
+    }
+}
+
+@media (min-width: 1200px) { 
+    .card-title{
+        font-size: 19px;
+    }
+
+    .card-text{
+        font-size: 19px;
+    }
+
+    .flip-card {
+        height: 390px;
+    }
+
+    .flip-card-front, .flip-card-back {
+        height: 390px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .card-title{
+        font-size: 24px;
+    }
+ 
+    .card-text{
+        font-size: 24px;
+    }
+
+    .flip-card {
+        height: 450px;
+    }
+
+    .flip-card-front, .flip-card-back {
+        height: 450px;
+    }
+}
