@@ -90,7 +90,8 @@ tab_content2 = dbc.Container(
                             ],
                             className="flip-card-inner"
                         ),
-                        className="mb-3 flip-card"
+                        className="mb-3 flip-card",
+                        id="card-1"
                     ),
                     html.Div(
                         html.Div(
@@ -121,7 +122,8 @@ tab_content2 = dbc.Container(
                             ],
                             className="flip-card-inner"
                         ),
-                        className="mb-3 flip-card"
+                        className="mb-3 flip-card",
+                        id="card-3"
                     ),
                 ]
             ),
@@ -156,7 +158,8 @@ tab_content2 = dbc.Container(
                             ],
                             className="flip-card-inner"
                         ),
-                        className="mb-3 flip-card"
+                        className="mb-3 flip-card",
+                        id="card-2"
                     ),
                     html.Div(
                         html.Div(
@@ -188,7 +191,8 @@ tab_content2 = dbc.Container(
                             ],
                             className="flip-card-inner"
                         ),
-                        className="mb-3 flip-card"
+                        className="mb-3 flip-card",
+                        id="card-4"
                     ),
                 ]
             )
@@ -224,7 +228,11 @@ app.layout = html.Div(children=[
             active_tab="plantillas",
             className="mt-3"
         ),
-        html.Div(id="content")
+        html.Div(id="content",),
+        html.Div(id="card1t",),
+        html.Div(id="card2t",),
+        html.Div(id="card3t",),
+        html.Div(id="card4t",)
     ])
 ])
 
@@ -252,6 +260,23 @@ def update_recientes_list(x):
         )
         list_items.append(item)
     return list_items
+
+#Callbacks plantillas
+@app.callback(Output("card1t", "className"), [Input('card-1', 'n_clicks')])
+def card_1_click(click):
+    print("Card 1")
+
+@app.callback(Output("card2t", "className"), [Input('card-2', 'n_clicks')])
+def card_2_click(click):
+    print("Card 2")
+
+@app.callback(Output("card3t", "className"), [Input('card-3', 'n_clicks')])
+def card_3_click(click):
+    print("Card 3")
+
+@app.callback(Output("card4t", "className"), [Input('card-4', 'n_clicks')])
+def card_4_click(click):
+    print("Card 4")
 
 def run_app():
     app.run_server(port=8050, debug=False)
