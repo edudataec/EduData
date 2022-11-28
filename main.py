@@ -40,6 +40,20 @@ tab_content1 = dbc.Container([
         ],
         id="reciente-list-cont",
         className="mt-3 mb-3"
+    ),
+    dbc.Row(
+        [
+            dbc.Col(
+                dbc.Button("BUSCAR", color="primary", className="me-1"),
+                width="auto"
+            ),
+            dbc.Col(
+                dbc.Button("CREAR NUEVO", color="primary", className="me-1"),
+                width="auto"
+            )
+        ],
+        justify="end",
+        className="mb-3"
     )
 ])
 tab_content2 = dbc.Container("tab2")
@@ -91,9 +105,10 @@ def update_recientes_list(x):
         item = dbc.ListGroupItem(
             dbc.Row(
                 [
-                    dbc.Col(proyecto["name"], width=10, lg=10, md=9, sm=8),
-                    dbc.Col("Hace " + str(proyecto["dias"]) + " días", width=2, lg=2, md=3, sm=4)
-                ]
+                    dbc.Col(proyecto["name"], width="auto"),
+                    dbc.Col("Hace " + str(proyecto["dias"]) + " días", width="auto")
+                ],
+                justify="between"
             )
         )
         list_items.append(item)
