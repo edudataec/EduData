@@ -284,4 +284,4 @@ def button_func(n1, n2):
     if button_clicked == "buscar":
         print("buscar")
     elif button_clicked == "nuevo":
-        return dcc.Location(pathname="/editor", id="id_no_importa")
+        return dcc.Location(pathname="/nodata", id="id_no_importa")
