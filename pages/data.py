@@ -1,11 +1,11 @@
 import dash
+import os
 from dash import Dash, dcc, Output, Input, State, html, page_container, callback
 import dash_bootstrap_components as dbc
-import tkinter as tk
-from tkinter import filedialog
+import plotly.express as px
+import pandas as pd
 
-
-dash.register_page(__name__, name='nodata')
+dash.register_page(__name__, name='data')
 
 layout = html.Div(
     [
@@ -26,7 +26,7 @@ layout = html.Div(
                     ) 
                 ),
                 dbc.NavItem(dbc.NavLink("Editor", href="/editor")),
-                dbc.NavItem(dbc.NavLink("Data", href="/nodata", active=True)),
+                dbc.NavItem(dbc.NavLink("Data", href="/data", active=True)),
                 dbc.NavItem(dbc.NavLink("Visualizar", href="/visualizar"))
             ],
             color="primary",
@@ -37,17 +37,16 @@ layout = html.Div(
             [
                 dbc.Col(
                     [
-                        html.H3("No hay datos cargados actualmente...", style={"text-align":"center"}),
+                        html.H3(id="nombre_archivo"),
                         dbc.Row(
                             dbc.Col(
                                 [
-                                    html.Div(dbc.Button("CARGAR", color="primary", className="me-1 mt-3", id="cargar"), id="cargar_cont"),
-                                    html.Div(id="button_func_enabler", style={"display":"none"}),
+                                    dbc.Button("CARGAR", color="primary", className="me-1 mt-3", id="cargar"),
                                     html.Div(id="cargar_target")
                                 ],
                                 width="auto"
                             ),
-                            justify="center"
+                            justify="end"
                         ),
                     ],
                     align="center",
@@ -61,23 +60,10 @@ layout = html.Div(
     ]
 )
 
-@callback(Output("cargar", "disabled"), Output("button_func_enabler", "children"), Input("cargar", "n_clicks"))
-def button_disabler(n_clicks):
-    if n_clicks is not None:
-        return True, "1"
-    else:
-        return False, None
-
-@callback(Output("data_path", "data"), Output("cargar_cont", "children"), Output("cargar_target", "children"), Input("button_func_enabler", "children"), State("data_path", "data"))
-def cargar_data(enable, x):
-    file_path = ""
-    button = dbc.Button("CARGAR", color="primary", className="me-1 mt-3", id="cargar")
-    if(enable is not None):
-        root = tk.Tk()
-        root.withdraw()
-        file_path = filedialog.askopenfilename()
-        print(file_path)
-        root.destroy()
-        return file_path, button, dcc.Location(pathname="/data", id="id_no_importa")
-    else:
-        return file_path, button, None
+@callback(Output("nombre_archivo", "children"), Input("data_path", "modified_timestamp"), State("data_path", "data"))
+def update_title(ts, data):
+    print("update_title")
+    print(ts)
+    if ts is not None:
+        print(data)
+        return os.path.basename(data)

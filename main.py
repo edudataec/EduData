@@ -1,5 +1,5 @@
 from threading import Thread
-from dash import Dash, html, page_container
+from dash import Dash, html, page_container, dcc
 import webview
 
 app = Dash(__name__, external_stylesheets=["assets/css/bootstrap.min.css", "assets/css/style.css"], assets_folder='assets', assets_external_path="",
@@ -7,6 +7,7 @@ app = Dash(__name__, external_stylesheets=["assets/css/bootstrap.min.css", "asse
 
 app.layout = html.Div(
     [
+        dcc.Store(id="data_path", storage_type="session"),
         page_container
     ]
 )
