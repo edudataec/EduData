@@ -1,10 +1,12 @@
 import dash
 import os
+import re
 from dash import Dash, dcc, Output, Input, State, html, page_container, callback, dash_table
 import dash_bootstrap_components as dbc
-import plotly.express as px
 import pandas as pd
-import re
+import tkinter as tk
+from tkinter import filedialog
+
 
 dash.register_page(__name__, name='data')
 
@@ -38,7 +40,8 @@ layout = html.Div(
             [
                 dbc.Col(
                     [
-                        html.H2(id="nombre_archivo", className="mt-3"),
+                        html.H3("No hay datos cargados actualmente...", id="no_data_header", style={"text-align":"center"}),
+                        html.H2(id="nombre_archivo", className="mt-3", style={"display":"none"}),
                         html.Div(dash_table.DataTable(id="full_data_table"), style={"display":"none"}),
                         dbc.Row(
                             dbc.Col(
@@ -51,45 +54,72 @@ layout = html.Div(
                                 class_name="mt-3",
                                 width="auto"
                             ),
-                            justify="end"
+                            id="table_display",
+                            justify="end",
+                            style={"display":"none"}
                         ),
                         dbc.Row(
                             dbc.Col(
                                 [
-                                    html.Div(dbc.Button("CAMBIAR", color="primary", className="me-1 mt-3 mb-3", id="cambiar"), id="cambiar_cont"),
+                                    html.Div(dbc.Button("CARGAR", color="primary", className="me-1 mt-3 mb-3", id="cargar"), id="cargar_cont"),
                                     html.Div(id="button_func_enabler", style={"display":"none"}),
-                                    html.Div(id="cambiar_target")
+                                    html.Div(id="cargar_target")
                                 ],
                                 width="auto"
                             ),
-                            justify="end"
+                            justify="center"
                         ),
                     ],
                     align="center",
                     width="auto"
                 )
             ],
+            id="data_page",
             align="center",
             justify="center",
-            style={"background-color":"lightgrey", "height":"auto"}
+            style={"background-color":"lightgrey", "height":"95vh"}
         )
     ]
 )
 
+@callback(Output("cargar", "disabled"), Output("button_func_enabler", "children"), Input("cargar", "n_clicks"))
+def button_disabler(n_clicks):
+    if n_clicks is not None:
+        return True, "1"
+    else:
+        return False, None
+
+@callback(Output("data_path", "data"), Output("cargar_cont", "children"), Output("table_display", "style"), Output("nombre_archivo", "style"), Output("no_data_header", "style"), Output("data_page", "style"),
+Input("button_func_enabler", "children"), State("data_path", "data"))
+def cargar_data(enable, x):
+    print("cargar")
+    file_path = ""
+    button = dbc.Button("CARGAR", color="primary", className="me-1 mt-3 mb-3", id="cargar")
+    if(enable is not None):
+        root = tk.Tk()
+        root.withdraw()
+        root.wm_attributes('-topmost', 1)
+        file_path = filedialog.askopenfilename(parent=root)
+        print(file_path)
+        root.destroy()
+        if file_path!="":
+            return file_path, button, None, None, {"display":"none"}, {"background-color":"lightgrey", "height":"auto"}
+    return file_path, button, {"display":"none"}, {"display":"none"}, None, {"background-color":"lightgrey", "height":"95vh"}
+
 @callback(Output("nombre_archivo", "children"), Input("data_path", "modified_timestamp"), State("data_path", "data"))
 def update_title(ts, data):
     print(ts)
-    if ts is not None:
+    if ts is not None and data is not None:
         print(data)
         return "Archivo cargado: " + os.path.basename(data)
 
 @callback(Output("table", "columns"), Output("full_data_table", "columns"), Output('full_data_table', 'data'),Input("data_path", "modified_timestamp"), State("data_path", "data"))
-def load_update_data(ts, datapath):
+def load_data(ts, datapath):
     if ts is not None:
-        df = pd.DataFrame()
-        file_extension = os.path.splitext(os.path.basename(datapath))[1]
-        print(file_extension)
         try:
+            df = pd.DataFrame()
+            file_extension = os.path.splitext(os.path.basename(datapath))[1]
+            print(file_extension)
             if file_extension == ".csv":
                 df = pd.read_csv(datapath)
                 df['index'] = range(1, len(df)+1)
@@ -105,18 +135,21 @@ def load_update_data(ts, datapath):
 
 @callback(Output('table', 'data'), 
 Input('table', 'page_current'), Input('table', 'page_size'), Input('table', 'sort_by'), Input('full_data_table', 'data'))
-def load_update_data(page_current, page_size, sort_by, data):
+def update_data(page_current, page_size, sort_by, data):
     print(sort_by)
-    df = pd.DataFrame.from_records(data)
-    if len(sort_by):
-        dff = df.sort_values(
-            [col['column_id'] for col in sort_by],
-            ascending=[
-                col['direction'] == 'asc'
-                for col in sort_by
-            ],
-            inplace=False
-        )
-    else:
-        dff=df
-    return dff.iloc[page_current*page_size:(page_current + 1)*page_size].to_dict('records')
+    try:
+        df = pd.DataFrame.from_records(data)
+        if len(sort_by):
+            dff = df.sort_values(
+                [col['column_id'] for col in sort_by],
+                ascending=[
+                    col['direction'] == 'asc'
+                    for col in sort_by
+                ],
+                inplace=False
+            )
+        else:
+            dff=df
+        return dff.iloc[page_current*page_size:(page_current + 1)*page_size].to_dict('records')
+    except:
+        return {}
