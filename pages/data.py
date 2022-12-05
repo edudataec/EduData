@@ -1,9 +1,10 @@
 import dash
 import os
-from dash import Dash, dcc, Output, Input, State, html, page_container, callback
+from dash import Dash, dcc, Output, Input, State, html, page_container, callback, dash_table
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
+import re
 
 dash.register_page(__name__, name='data')
 
@@ -37,12 +38,27 @@ layout = html.Div(
             [
                 dbc.Col(
                     [
-                        html.H3(id="nombre_archivo"),
+                        html.H2(id="nombre_archivo", className="mt-3"),
+                        html.Div(dash_table.DataTable(id="full_data_table"), style={"display":"none"}),
                         dbc.Row(
                             dbc.Col(
                                 [
-                                    dbc.Button("CARGAR", color="primary", className="me-1 mt-3", id="cargar"),
-                                    html.Div(id="cargar_target")
+                                    dash_table.DataTable(id="table", 
+                                    page_current=0, page_size=20, page_action='custom',
+                                    sort_action='custom', sort_mode='multi', sort_by=[])
+                                ],
+                                id="table_cont",
+                                class_name="mt-3",
+                                width="auto"
+                            ),
+                            justify="end"
+                        ),
+                        dbc.Row(
+                            dbc.Col(
+                                [
+                                    html.Div(dbc.Button("CAMBIAR", color="primary", className="me-1 mt-3 mb-3", id="cambiar"), id="cambiar_cont"),
+                                    html.Div(id="button_func_enabler", style={"display":"none"}),
+                                    html.Div(id="cambiar_target")
                                 ],
                                 width="auto"
                             ),
@@ -55,15 +71,52 @@ layout = html.Div(
             ],
             align="center",
             justify="center",
-            style={"background-color":"lightgrey", "height":"95vh"}
+            style={"background-color":"lightgrey", "height":"auto"}
         )
     ]
 )
 
 @callback(Output("nombre_archivo", "children"), Input("data_path", "modified_timestamp"), State("data_path", "data"))
 def update_title(ts, data):
-    print("update_title")
     print(ts)
     if ts is not None:
         print(data)
-        return os.path.basename(data)
+        return "Archivo cargado: " + os.path.basename(data)
+
+@callback(Output("table", "columns"), Output("full_data_table", "columns"), Output('full_data_table', 'data'),Input("data_path", "modified_timestamp"), State("data_path", "data"))
+def load_update_data(ts, datapath):
+    if ts is not None:
+        df = pd.DataFrame()
+        file_extension = os.path.splitext(os.path.basename(datapath))[1]
+        print(file_extension)
+        try:
+            if file_extension == ".csv":
+                df = pd.read_csv(datapath)
+                df['index'] = range(1, len(df)+1)
+                print(df.columns)
+            elif re.match("^\.(xls|xlsx|xlsm|xlsb|odf|ods|odt)$", file_extension):
+                print('Excel')
+                df = pd.read_excel(datapath)
+                print(df)
+        except:
+            print("error")
+        columns = [{'name': i, 'id': i, 'deletable': True} for i in sorted(df.columns)]
+        return columns, columns, df.to_dict('records')
+
+@callback(Output('table', 'data'), 
+Input('table', 'page_current'), Input('table', 'page_size'), Input('table', 'sort_by'), Input('full_data_table', 'data'))
+def load_update_data(page_current, page_size, sort_by, data):
+    print(sort_by)
+    df = pd.DataFrame.from_records(data)
+    if len(sort_by):
+        dff = df.sort_values(
+            [col['column_id'] for col in sort_by],
+            ascending=[
+                col['direction'] == 'asc'
+                for col in sort_by
+            ],
+            inplace=False
+        )
+    else:
+        dff=df
+    return dff.iloc[page_current*page_size:(page_current + 1)*page_size].to_dict('records')
