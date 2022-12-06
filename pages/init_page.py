@@ -1,6 +1,8 @@
 import dash
 from dash import Dash, dcc, Output, Input, html, page_container, callback, ctx
 import dash_bootstrap_components as dbc
+import tkinter as tk
+from tkinter import filedialog
 
 #Dummy recientes
 proyectos_recientes = [
@@ -40,11 +42,16 @@ tab_content1 = dbc.Container([
     dbc.Row(
         [
             dbc.Col(
-                dbc.Button("BUSCAR", color="primary", className="me-1", id="buscar"),
+                [
+                    html.Div(dbc.Button("BUSCAR", color="primary", className="me-1", id="buscar"), id="buscar_cont"),
+                    html.Div(id="buscar_func_enabler", style={"display":"none"}),
+                ],
+                align="center",
                 width="auto"
             ),
             dbc.Col(
                 dbc.Button("CREAR NUEVO", color="primary", className="me-1", id="nuevo"),
+                align="center",
                 width="auto"
             )
         ],
@@ -283,3 +290,25 @@ def button_func(n1, n2):
         print("buscar")
     elif button_clicked == "nuevo":
         return dcc.Location(pathname="/data", id="id_no_importa")
+
+@callback(Output("buscar", "disabled"), Output("buscar_func_enabler", "children"), Input("buscar", "n_clicks"))
+def buscar_disabler(n_clicks):
+    if n_clicks is not None:
+        return True, "1"
+    else:
+        return False, None
+
+@callback(Output("buscar_cont", "children"), Input("buscar_func_enabler", "children"))
+def buscar_proyecto(enable):
+    file_path = ""
+    button = dbc.Button("BUSCAR", color="primary", className="me-1 mt-3 mb-3", id="buscar")
+    if(enable is not None):
+        root = tk.Tk()
+        root.withdraw()
+        root.wm_attributes('-topmost', 1)
+        file_path = filedialog.askopenfilename(parent=root)
+        print(file_path)
+        root.destroy()
+        if file_path!="":
+            return button
+    return button
