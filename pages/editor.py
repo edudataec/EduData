@@ -32,6 +32,50 @@ layout = html.Div(
             dark=True,
             links_left=True
         ),
-        html.Div("EDITOR")
+        dbc.Container(
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            dbc.Row(
+                                [
+                                    dbc.Col(width=4, style={"background-color":"white", "min-height":"200px", "margin":"10px"}),
+                                    dbc.Col(width=4, style={"background-color":"white", "min-height":"200px", "margin":"10px"}),
+                                    dbc.Col(width=4, style={"background-color":"white", "min-height":"200px", "margin":"10px"}),
+                                    dbc.Col(width=4, style={"background-color":"white", "min-height":"200px", "margin":"10px"}),
+                                    dbc.Col(width=4, style={"background-color":"white", "min-height":"200px", "margin":"10px"}),
+                                    dbc.Col(width=4, style={"background-color":"white", "min-height":"200px", "margin":"10px"}),
+                                    dbc.Col(width=4, style={"background-color":"white", "min-height":"200px", "margin":"10px"}),
+                                    dbc.Col(width=4, style={"background-color":"white", "min-height":"200px", "margin":"10px"}),
+                                ],
+                                id="main_row"
+                            ),
+                            html.Div(
+                                dbc.Button("+", style={"font-size":"4vh", "border-radius":"100%", "width":"7vh", "height":"7vh"}),
+                                style={"position":"fixed", "right":"10px", "bottom":"10px"}
+                            )
+                        ],
+                        id="editor_col",
+                        style={"background-color":"lightgrey", "min-height":"100vh", "height":"auto"},
+                        width=True
+                    ),
+                    dbc.Col(
+                        [
+                            dcc.Markdown("Prueba"),
+                            dcc.Markdown("Prueba"),
+                            dcc.Markdown("Prueba"),
+                            dcc.Markdown("Prueba"),
+                            dcc.Markdown("Prueba"),
+                            dcc.Markdown("Prueba"),
+                        ],
+                        id="editor_col",
+                        style={"background-color":"white"},
+                        width=2
+                    )
+                ],
+                id="main_container",
+            ),
+            fluid=True
+        )
     ]
 )
