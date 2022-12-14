@@ -1,5 +1,5 @@
 import dash
-from dash import Dash, dcc, Output, Input, html, page_container, callback, State
+from dash import Dash, dcc, Output, Input, html, page_container, callback, State, MATCH
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
@@ -39,14 +39,7 @@ layout = html.Div(
                         [
                             dbc.Row(
                                 [
-                                    dbc.Col(width=4, style={"background-color":"white", "min-height":"200px", "margin":"10px"}),
-                                    dbc.Col(width=4, style={"background-color":"white", "min-height":"200px", "margin":"10px"}),
-                                    dbc.Col(width=4, style={"background-color":"white", "min-height":"200px", "margin":"10px"}),
-                                    dbc.Col(width=4, style={"background-color":"white", "min-height":"200px", "margin":"10px"}),
-                                    dbc.Col(width=4, style={"background-color":"white", "min-height":"200px", "margin":"10px"}),
-                                    dbc.Col(width=4, style={"background-color":"white", "min-height":"200px", "margin":"10px"}),
-                                    dbc.Col(width=4, style={"background-color":"white", "min-height":"200px", "margin":"10px"}),
-                                    dbc.Col(width=4, style={"background-color":"white", "min-height":"200px", "margin":"10px"}),
+
                                 ],
                                 id="main_row"
                             ),
@@ -100,10 +93,38 @@ layout = html.Div(
     ]
 )
 
-@callback(Output("main_container", "id"), Input("add-cont-button", "n_clicks"))
-def test(n):
-    return "main_container"
+#Editor callbacks
+@callback(Output("main_row", "children"), Input("add-cont-button", "n_clicks"), State("main_row", "children"))
+def test(n_clicks, children):
+    children.append(
+        dbc.Col(
+            html.Div(
+                [
+                    html.Div(
+                        id={"type":"graph", "index":n_clicks},
+                        className="col-button"
+                    ),
+                    html.Div(
+                        id={"type":"config", "index":n_clicks},
+                        className="col-button"
+                    ),
+                    html.Div(
+                        id={"type":"remove", "index":n_clicks},
+                        className="col-button"
+                    )
+                ],
+                id={"type":"cont_opt", "index":n_clicks},
+                className="col-buttons-cont-lg"
+            ),
+            id={"type":"cont", "index":n_clicks},
+            width=4,
+            className="graph-cont"
+        )
+    )
+    return children
 
+
+#Options callbacks
 @callback(Output("options-slider-cont", "className"), Input("slider-button", "n_clicks"), State("options-slider-cont", "className"))
 def slide_down(n_clicks, className):
     if className == "options-slider-cont-up":
