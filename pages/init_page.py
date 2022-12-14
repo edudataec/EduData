@@ -1,5 +1,6 @@
 import dash
-from dash import Dash, dcc, Output, Input, html, page_container, callback, ctx
+import json
+from dash import Dash, dcc, Output, Input, html, page_container, callback, ctx, State
 import dash_bootstrap_components as dbc
 import tkinter as tk
 from tkinter import filedialog
@@ -231,6 +232,19 @@ layout = html.Div(children=[
             active_tab="plantillas",
             className="mt-3"
         ),
+        dbc.Modal(
+            [
+                dbc.ModalHeader(dbc.ModalTitle("Nombra tu dashboard")),
+                dbc.ModalBody(dbc.Input(id="new_dash_title", placeholder="Escribe el título de tu dashboard", type="text")),
+                dbc.ModalFooter(
+                    dbc.Button(
+                        "CREAR", id="crear_dash"
+                    )
+                )
+            ],
+            id="crear_dash_dialg",
+            is_open=False
+        ),
         html.Div(id="content",),
         html.Div(id="card1t",),
         html.Div(id="card2t",),
@@ -283,13 +297,30 @@ def card_4_click(click):
     print("Card 4")
 
 #Callback botón
-@callback(Output("button_target", "children"), [Input("buscar", "n_clicks"), Input("nuevo", "n_clicks")])
-def button_func(n1, n2):
+@callback(Output("crear_dash_dialg", "is_open"), [Input("buscar", "n_clicks"), Input("nuevo", "n_clicks"), Input("crear_dash", "n_clicks")], State("crear_dash_dialg", "is_open"))
+def button_func(n1, n2, n3, is_open):
     button_clicked = ctx.triggered_id
-    if button_clicked == "buscar":
-        print("buscar")
-    elif button_clicked == "nuevo":
-        return dcc.Location(pathname="/data", id="id_no_importa")
+    if is_open:
+        return not is_open
+    else:
+        if button_clicked == "buscar":
+            print("buscar")
+        elif button_clicked == "nuevo":
+            return not is_open
+
+#Callback crear dashboard nuevo
+@callback(Output("project_title", "data"), Output("button_target", "children"), Input("crear_dash", "n_clicks"), State("new_dash_title", "value"), prevent_initial_call=True)
+def crear_dash(n, title):
+    dash_meta_data = {
+        "id":title,
+        "data_path":"",
+        "contenedores":[],
+        "last_selected":"none",
+        "selected":"none"
+    }
+    with open("dashboards/" + title + ".json", "w") as outfile:
+        json.dump(dash_meta_data, outfile) 
+    return title + ".json", dcc.Location(pathname="/data", id="id_no_importa")
 
 @callback(Output("buscar", "disabled"), Output("buscar_func_enabler", "children"), Input("buscar", "n_clicks"))
 def buscar_disabler(n_clicks):

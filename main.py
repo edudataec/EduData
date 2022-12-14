@@ -8,6 +8,7 @@ app = Dash(__name__, external_stylesheets=["assets/css/bootstrap.min.css", "asse
 app.layout = html.Div(
     [
         dcc.Store(id="data_path", storage_type="session"),
+        dcc.Store(id="project_title", storage_type="session"),
         dcc.Store(id="selected_cont_index", storage_type="session"),
         page_container
     ]
