@@ -1,5 +1,5 @@
 import dash
-from dash import Dash, dcc, Output, Input, html, page_container, callback
+from dash import Dash, dcc, Output, Input, html, page_container, callback, State
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
@@ -51,9 +51,29 @@ layout = html.Div(
                                 id="main_row"
                             ),
                             html.Div(
-                                dbc.Button("+", style={"font-size":"4vh", "border-radius":"100%", "width":"7vh", "height":"7vh"}),
+                                dbc.Button("+", id="add-cont-button", style={"font-size":"4vh", "border-radius":"100%", "width":"7vh", "height":"7vh"}),
                                 style={"position":"fixed", "right":"10px", "bottom":"10px"}
-                            )
+                            ),
+                            html.Div(
+                                [
+                                    html.Div(
+                                        html.Img(
+                                            src="assets/imgs/arrows.png",
+                                            id="slider-button"
+                                        ),
+                                        className="slider-button-cont"
+                                    ),
+                                    html.Div(
+                                        [
+                                            dbc.Button("IMPORTAR", id="imp_button"),
+                                            dbc.Button("EXPORTAR", id="exp_button")
+                                        ],
+                                        className="slider-opt-cont"
+                                    ),
+                                ],
+                                id="options-slider-cont",
+                                className="options-slider-cont-up"
+                            ),
                         ],
                         id="editor_col",
                         style={"background-color":"lightgrey", "min-height":"100vh", "height":"auto"},
@@ -79,3 +99,15 @@ layout = html.Div(
         )
     ]
 )
+
+@callback(Output("main_container", "id"), Input("add-cont-button", "n_clicks"))
+def test(n):
+    return "main_container"
+
+@callback(Output("options-slider-cont", "className"), Input("slider-button", "n_clicks"), State("options-slider-cont", "className"))
+def slide_down(n_clicks, className):
+    if className == "options-slider-cont-up":
+        return "options-slider-cont-down"
+    elif className == "options-slider-cont-down":
+        return "options-slider-cont-up"
+
