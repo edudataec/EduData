@@ -1,6 +1,6 @@
 import json
 import dash
-from dash import Dash, dcc, Output, Input, html, page_container, callback, State, MATCH, ctx
+from dash import Dash, dcc, Output, Input, html, page_container, callback, State, MATCH, ctx, ALL
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
@@ -85,7 +85,8 @@ layout = html.Div(
                         id="editor_col",
                         style={"background-color":"white"},
                         width=2
-                    )
+                    ),
+                    html.Div(id="update_editor_target", hidden=True)
                 ],
                 id="main_container",
             ),
@@ -97,34 +98,40 @@ layout = html.Div(
 #Editor callbacks
 @callback(
     Output("main_row", "children"), 
-    Input("add-cont-button", "n_clicks"), 
-    State("main_row", "children"), 
+    Input("add-cont-button", "n_clicks"),
+    Input("update_editor_target", "children"),
     State("project_title", "data")
 )
-def update_editor(n_clicks, children, title):
+def update_editor(n_add, update, title):
     trigger = ctx.triggered_id
     with open("dashboards/" + title) as json_file:
         dash_data = json.load(json_file)
     print(dash_data)
     content = []
 
-    #Añadir contenedor
+    #Añadir contenedor vacío al json
     if trigger == "add-cont-button":
-        dash_data["contenedores"].append(
-            {
-                "id":"cont_" + str(n_clicks),
-                "index":str(n_clicks),
-                "width":"4",
-                "graph":{
-                    "type":"none"
-                }
-            }
-        )
-        with open("dashboards/" + title, "w") as outfile:
-            json.dump(dash_data, outfile) 
+        add_cont_to_json(n_add, title, dash_data)
 
     #Cargar elementos del json
+    return render_from_json(dash_data)
 
+def add_cont_to_json(n_add, title, dash_data):
+    dash_data["contenedores"].append(
+        {
+            "id":"cont_" + str(n_add),
+            "index":str(n_add),
+            "width":"4",
+            "graph":{
+                "type":"none"
+            }
+        }
+    )
+    with open("dashboards/" + title, "w") as outfile:
+        json.dump(dash_data, outfile) 
+
+def render_from_json(dash_data):
+    content = []
     for cont in dash_data["contenedores"]:
 
         if cont["index"] == dash_data["selected"]:
@@ -132,7 +139,7 @@ def update_editor(n_clicks, children, title):
         else:
             disable_opt = True
 
-        col_buttons_graph = html.Div(
+        col_buttons_no_graph = html.Div(
                             [
                                 html.Div(
                                     id={"type":"graph", "index":cont["index"]},
@@ -152,7 +159,7 @@ def update_editor(n_clicks, children, title):
                             className="col-buttons-cont-lg"
                         )
 
-        col_buttons_no_graph = html.Div(
+        col_buttons_graph = html.Div(
                             [
                                 html.Div(
                                     id={"type":"graph", "index":cont["index"]},
@@ -172,7 +179,6 @@ def update_editor(n_clicks, children, title):
                             className="col-buttons-cont-sm"
                         )
 
-        print(cont["graph"]["type"])
         match cont["graph"]["type"]:
             case "bar":
                 graph = dcc.Graph(figure = px.bar(data_frame=df, x=cont["graph"]["x"], y=cont["graph"]["y"], title=cont["graph"]["title"], barmode=cont["graph"]["barmode"], color=cont["graph"]["color"]), id={'type':cont["graph"]['type'], "index":cont['index']})
@@ -180,15 +186,43 @@ def update_editor(n_clicks, children, title):
             case "none":
                 content.append(
                     dbc.Col(
-                        col_buttons_graph,
-                        id={"type":"cont", "index":cont["index"]},
+                        html.Div(
+                            [
+                                col_buttons_no_graph,
+                            ],
+                            id={"type":"cont", "index":cont["index"]},
+                            className="graph-cont"
+                        ),
+                        id={"type":"col", "index":cont["index"]},
                         width=4,
-                        className="graph-cont"
+                        className="graph-col"
                     )
                 )
             case default:
                 print("Error de render: " + cont["id"])
     return content
+
+#Callback
+@callback(
+    Output("update_editor_target", "children"),
+    Input({"type":"cont", "index":ALL}, "n_clicks"),
+    State("project_title", "data"),
+    prevent_initial_call=True
+)
+def update_selected_cont(n, title):
+    trigger_id = ctx.triggered_id
+    if trigger_id["type"]=="cont":
+        if n[int(trigger_id["index"])-1] is not None:
+            print(n[int(trigger_id["index"])-1])
+            with open("dashboards/" + title) as json_file:
+                dash_data = json.load(json_file)
+
+            dash_data['selected'] = trigger_id['index']
+
+            with open("dashboards/" + title, "w") as outfile:
+                json.dump(dash_data, outfile) 
+            return n
+    return dash.no_update
 
 
 #Options callbacks

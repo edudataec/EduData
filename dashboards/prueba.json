@@ -1,1 +1,1 @@
-{"id": "prueba", "data_path": "", "contenedores": [{"id": "cont_1", "index": "1", "width": "4", "graph": {"type": "none"}}], "last_selected": "none", "selected": "none"}
+{"id": "prueba", "data_path": "", "contenedores": [{"id": "cont_1", "index": "1", "width": "4", "graph": {"type": "none"}}, {"id": "cont_2", "index": "2", "width": "4", "graph": {"type": "none"}}, {"id": "cont_3", "index": "3", "width": "4", "graph": {"type": "none"}}], "last_selected": "none", "selected": "3"}
