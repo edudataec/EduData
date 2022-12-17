@@ -91,11 +91,213 @@ layout = html.Div(
                 id="main_container",
             ),
             fluid=True
-        )
+        ),
+        dbc.Modal(
+            [
+                dbc.ModalHeader(),
+                dbc.ModalBody(
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                [],
+                                width=4, lg=3, xl=2, xxl=2,
+                                id="graph_class_toggle_col"
+                            ),
+                            dbc.Col(
+                                [],
+                                width=True,
+                                id="graph_class_col"
+                            )
+                        ],
+                        style={"width":"100%", "height":"100%", "margin":"0"}
+                    ),
+                    style={"padding":"0"}
+                ),
+            ],
+            id="graph_dialg",
+            size="xl",
+            is_open=False
+        ),
     ]
 )
 
+#Graph callbacks
+
+
 #Editor callbacks
+@callback(
+    Output("graph_dialg", "is_open"),
+    Output("graph_class_toggle_col", "children"),
+    Output("graph_class_col", "children"),
+    Input({"type":"graph", "index":ALL}, "n_clicks"),
+    Input({"type":"graph_tog", "name":ALL, "index":ALL}, "n_clicks"),
+    State("graph_dialg", "is_open") 
+)
+def graph_modal(n, n2, is_open):
+    trigger = ctx.triggered_id
+
+    graph_class_toggle_col = [
+        html.Div(
+            'Simple',
+            id={"type":"graph_tog", "name":"simple", "index":"0"},
+            className="graph_toggle_selected"
+        ),
+        html.Div(
+            'Distribución',
+            id={"type":"graph_tog", "name":"distrib", "index":"1"},
+            className="graph_toggle"
+        ),
+        html.Div(
+            'Finanzas',
+            id={"type":"graph_tog", "name":"finan", "index":"2"},
+            className="graph_toggle"
+        ),
+        html.Div(
+            'Avanzado',
+            id={"type":"graph_tog", "name":"adv", "index":"3"},
+            className="graph_toggle"
+        ),
+    ]
+
+    graph_class_col = [
+        html.Div(
+            [
+                html.Div(
+                    [
+                        html.Img(
+                            src="assets/imgs/bar_tr.png",
+                            className="graph_selec_img"
+                        ),
+                        html.Div(
+                            "Gráfico de barras vertical"
+                        )
+                    ],
+                    className="graph_opt_selec"
+                ),
+                html.Div(
+                    [
+                        html.Img(
+                            src="assets/imgs/bar_h_tr.png",
+                            className="graph_selec_img"
+                        ),
+                        html.Div(
+                            "Gráfico de barras horizontal"
+                        )
+                    ],
+                    className="graph_opt_selec"
+                ),
+                html.Div(
+                    [
+                        html.Img(
+                            src="assets/imgs/scatter_tr.png",
+                            className="graph_selec_img"
+                        ),
+                        html.Div(
+                            "Gráfico de dispersión"
+                        )
+                    ],
+                    className="graph_opt_selec"
+                ),
+            ],
+            className="graph_opt_row"
+        ),
+        html.Div(
+            [
+                html.Div(
+                    [
+                        html.Img(
+                            src="assets/imgs/line_tr.png",
+                            className="graph_selec_img"
+                        ),
+                        html.Div(
+                            "Gráfico de líneas"
+                        )
+                    ],
+                    className="graph_opt_selec"
+                ),
+                html.Div(
+                    [
+                        html.Img(
+                            src="assets/imgs/bubl_tr.png",
+                            className="graph_selec_img"
+                        ),
+                        html.Div(
+                            "Gráfico de burbujas"
+                        )
+                    ],
+                    className="graph_opt_selec"
+                ),
+                html.Div(
+                    [
+                        html.Img(
+                            src="assets/imgs/pie_tr.png",
+                            className="graph_selec_img"
+                        ),
+                        html.Div(
+                            "Pie chart"
+                        )
+                    ],
+                    className="graph_opt_selec"
+                ),
+            ],
+            className="graph_opt_row"
+        )
+    ]
+    
+    print(trigger)
+    print(n)
+    print(n2)
+    if not is_open and trigger["type"] == "graph" and n[int(trigger["index"])-1] is not None:
+        return True, graph_class_toggle_col, graph_class_col
+    elif trigger["type"] == "graph_tog" and n2[int(trigger["index"])] is not None:
+        match trigger["name"]:
+            case "simple":
+                return True, graph_class_toggle_col, graph_class_col
+            case "distrib":
+                #Cambiar la opción seleccionada
+                graph_class_toggle_col[0] = html.Div(
+                                                'Simple',
+                                                id={"type":"graph_tog", "name":"simple", "index":"0"},
+                                                className="graph_toggle"
+                                            )
+                graph_class_toggle_col[1] = html.Div(
+                                                'Distribución',
+                                                id={"type":"graph_tog", "name":"distrib", "index":"1"},
+                                                className="graph_toggle_selected"
+                                            )
+                return True, graph_class_toggle_col, graph_class_col
+            case "finan":
+                #Cambiar la opción seleccionada
+                graph_class_toggle_col[0] = html.Div(
+                                                'Simple',
+                                                id={"type":"graph_tog", "name":"simple", "index":"0"},
+                                                className="graph_toggle"
+                                            )
+                graph_class_toggle_col[2] = html.Div(
+                                                'Finanzas',
+                                                id={"type":"graph_tog", "name":"finan", "index":"2"},
+                                                className="graph_toggle_selected"
+                                            )
+                return True, graph_class_toggle_col, graph_class_col
+            case "adv":
+                #Cambiar la opción seleccionada
+                graph_class_toggle_col[0] = html.Div(
+                                                'Simple',
+                                                id={"type":"graph_tog", "name":"simple", "index":"0"},
+                                                className="graph_toggle"
+                                            )
+                graph_class_toggle_col[3] = html.Div(
+                                                'Avanzado',
+                                                id={"type":"graph_tog", "name":"adv", "index":"3"},
+                                                className="graph_toggle_selected"
+                                            )
+                return True, graph_class_toggle_col, graph_class_col
+            case _:
+                return dash.no_update, dash.no_update, dash.no_update
+    return dash.no_update, dash.no_update, dash.no_update
+
+
+
 @callback(
     Output("main_row", "children"), 
     Input("add-cont-button", "n_clicks"),
@@ -217,7 +419,7 @@ def render_from_json(dash_data):
                         style=selected_style
                     )
                 )
-            case default:
+            case _:
                 print("Error de render: " + cont["id"])
     return content
 
@@ -260,6 +462,8 @@ def update_selected_cont(n, n2, title, is_not_selected):
             json.dump(dash_data, outfile) 
         return n
     return dash.no_update
+
+
 
 #Callback para abrir opciones
 @callback(Output("config_col", "class_name"), Input({"type":"config", "index":ALL}, "n_clicks"), State("config_col", "class_name"), prevent_initial_call=True)

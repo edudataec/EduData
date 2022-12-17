@@ -145,6 +145,62 @@
     background-color: white;
   }
 
+  #graph_class_toggle_col {
+    padding: 0;
+    border-right: 1px solid gray;
+  }
+
+  .graph_toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top: 1px solid gray;
+    border-bottom: 1px solid gray;
+    font-weight: bold;
+    height: 15%;
+  }
+
+  .graph_toggle_selected {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top: 1px solid gray;
+    border-bottom: 1px solid gray;
+    font-weight: bold;
+    background-color: lightgray;
+    height: 15%;
+  }
+
+  .graph_opt_row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-evenly;
+  }
+
+  .graph_opt_selec {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin:3%;
+    font-size: 1.7vh;
+    text-align: center;
+  }
+
+  .graph_selec_img{
+    width: 73px;
+    height: 75px;
+    margin-bottom: 10%;
+  }
+
+  .graph_selec_img:hover {
+    background-color: lightgray;
+    width: 73px;
+    height: 75px;
+    margin-bottom: 10%;
+  }
+
 @media (min-width: 576px) { 
     .card-title{
         font-size: 12px;

@@ -1,7 +1,8 @@
 import dash
 import os
 import re
-from dash import Dash, dcc, Output, Input, State, html, page_container, callback, dash_table
+import json
+from dash import Dash, dcc, Output, Input, State, html, page_container, callback, dash_table, ctx
 import dash_bootstrap_components as dbc
 import pandas as pd
 import tkinter as tk
@@ -90,20 +91,29 @@ def button_disabler(n_clicks):
         return False, None
 
 @callback(Output("data_path", "data"), Output("cargar_cont", "children"), Output("table_display", "style"), Output("nombre_archivo", "style"), Output("no_data_header", "style"), Output("data_page", "style"),
-Input("button_func_enabler", "children"), State("data_path", "data"))
-def cargar_data(enable, x):
-    print("cargar")
-    file_path = ""
+Input("button_func_enabler", "children"), State("data_path", "data"), State("project_title", "data"))
+def cargar_data(enable, x, title):
+    trigger_id = ctx.triggered_id
     button = dbc.Button("CARGAR", color="primary", className="me-1 mt-3 mb-3", id="cargar")
-    if(enable is not None):
+    file_path = ""
+    with open("dashboards/" + title) as json_file:
+        dash_data = json.load(json_file)
+    if trigger_id == "button_func_enabler" and enable is not None:
         root = tk.Tk()
         root.withdraw()
         root.wm_attributes('-topmost', 1)
         file_path = filedialog.askopenfilename(parent=root)
-        print(file_path)
         root.destroy()
         if file_path!="":
+            dash_data["data_path"] = file_path
+
+            with open("dashboards/" + title, "w") as outfile:
+                json.dump(dash_data, outfile)
+            
             return file_path, button, None, None, {"display":"none"}, {"background-color":"lightgrey", "height":"auto"}
+    elif (dash_data["data_path"] != "") :
+        file_path = dash_data["data_path"]
+        return file_path, button, None, None, {"display":"none"}, {"background-color":"lightgrey", "height":"auto"}
     return file_path, button, {"display":"none"}, {"display":"none"}, None, {"background-color":"lightgrey", "height":"95vh"}
 
 @callback(Output("nombre_archivo", "children"), Input("data_path", "modified_timestamp"), State("data_path", "data"))
@@ -113,6 +123,7 @@ def update_title(ts, data):
         print(data)
         return "Archivo cargado: " + os.path.basename(data)
 
+#Callbacks de tabla
 @callback(Output("table", "columns"), Output("full_data_table", "columns"), Output('full_data_table', 'data'),Input("data_path", "modified_timestamp"), State("data_path", "data"))
 def load_data(ts, datapath):
     if ts is not None:
