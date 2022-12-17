@@ -117,10 +117,14 @@ def update_editor(n_add, update, title):
     return render_from_json(dash_data)
 
 def add_cont_to_json(n_add, title, dash_data):
+
+    contenedores = dash_data["contenedores"].copy()
+    next_index = int(sorted(contenedores, key=lambda r: r["index"], reverse=True)[0]["index"])+1
+
     dash_data["contenedores"].append(
         {
-            "id":"cont_" + str(n_add),
-            "index":str(n_add),
+            "id":"cont_" + str(next_index),
+            "index":str(next_index),
             "width":"4",
             "graph":{
                 "type":"none"
@@ -208,7 +212,7 @@ def render_from_json(dash_data):
                             className="graph-cont"
                         ),
                         id={"type":"col", "index":cont["index"]},
-                        width=4,
+                        width={"size":4, "order":cont["index"]},
                         className="graph-col",
                         style=selected_style
                     )
@@ -217,27 +221,44 @@ def render_from_json(dash_data):
                 print("Error de render: " + cont["id"])
     return content
 
-#Callback
+#Callback para cualquier opción que requiera cargar de nuevo el editor
 @callback(
     Output("update_editor_target", "children"),
     Input({"type":"cont", "index":ALL}, "n_clicks"),
+    Input({"type":"remove", "index":ALL}, "n_clicks"),
     State("project_title", "data"),
     State({"type":"cont_opt", "index":ALL}, "hidden"),
     prevent_initial_call=True
 )
-def update_selected_cont(n, title, is_not_selected):
+def update_selected_cont(n, n2, title, is_not_selected):
     trigger_id = ctx.triggered_id
-    if trigger_id["type"]=="cont":
-        if n[int(trigger_id["index"])-1] is not None and is_not_selected[int(trigger_id["index"])-1]:
-            print(n[int(trigger_id["index"])-1])
-            with open("dashboards/" + title) as json_file:
-                dash_data = json.load(json_file)
+    with open("dashboards/" + title) as json_file:
+        dash_data = json.load(json_file)
+    if trigger_id["type"]=="cont" and n[int(trigger_id["index"])-1] is not None and is_not_selected[int(trigger_id["index"])-1]:
+        #Se actualiza el contenedor seleccionado en el json
+        dash_data['selected'] = trigger_id['index']
 
-            dash_data['selected'] = trigger_id['index']
+        with open("dashboards/" + title, "w") as outfile:
+            json.dump(dash_data, outfile) 
+        return n
+    elif n2[int(trigger_id["index"])-1] is not None and trigger_id["type"]=="remove":
+        #Se borra el contenedor seleccionado y se reordena los contenedores en el json
+        dash_data["contenedores"][:] = [
+            item for item in dash_data["contenedores"] if item.get("index") != trigger_id["index"]
+        ]
 
-            with open("dashboards/" + title, "w") as outfile:
-                json.dump(dash_data, outfile) 
-            return n
+        dash_data["contenedores"] = sorted(dash_data["contenedores"], key=lambda r: r["index"], reverse=False)
+
+        index = 1
+        for cont in dash_data["contenedores"]:
+            cont["index"] = index
+            index+=1
+
+        print(dash_data["contenedores"])
+        
+        with open("dashboards/" + title, "w") as outfile:
+            json.dump(dash_data, outfile) 
+        return n
     return dash.no_update
 
 #Callback para abrir opciones
