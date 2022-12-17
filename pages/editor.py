@@ -82,8 +82,8 @@ layout = html.Div(
                             dcc.Markdown("Prueba"),
                             dcc.Markdown("Prueba"),
                         ],
-                        id="editor_col",
-                        style={"background-color":"white"},
+                        id="config_col",
+                        class_name="config-col-closed",
                         width=2
                     ),
                     html.Div(id="update_editor_target", hidden=True)
@@ -136,20 +136,34 @@ def render_from_json(dash_data):
 
         if cont["index"] == dash_data["selected"]:
             disable_opt = False
+            selected_style = {"border-color":"lightskyblue"}
         else:
             disable_opt = True
+            selected_style = {}
 
         col_buttons_no_graph = html.Div(
                             [
                                 html.Div(
+                                    html.Img(
+                                        src="assets/imgs/add_graph.png",
+                                        className="cont-opt-img"
+                                    ),
                                     id={"type":"graph", "index":cont["index"]},
                                     className="col-button"
                                 ),
                                 html.Div(
+                                    html.Img(
+                                        src="assets/imgs/options.png",
+                                        className="cont-opt-img"
+                                    ),
                                     id={"type":"config", "index":cont["index"]},
                                     className="col-button"
                                 ),
                                 html.Div(
+                                    html.Img(
+                                        src="assets/imgs/remove.png",
+                                        className="cont-opt-img"
+                                    ),
                                     id={"type":"remove", "index":cont["index"]},
                                     className="col-button"
                                 )
@@ -195,7 +209,8 @@ def render_from_json(dash_data):
                         ),
                         id={"type":"col", "index":cont["index"]},
                         width=4,
-                        className="graph-col"
+                        className="graph-col",
+                        style=selected_style
                     )
                 )
             case default:
@@ -207,12 +222,13 @@ def render_from_json(dash_data):
     Output("update_editor_target", "children"),
     Input({"type":"cont", "index":ALL}, "n_clicks"),
     State("project_title", "data"),
+    State({"type":"cont_opt", "index":ALL}, "hidden"),
     prevent_initial_call=True
 )
-def update_selected_cont(n, title):
+def update_selected_cont(n, title, is_not_selected):
     trigger_id = ctx.triggered_id
     if trigger_id["type"]=="cont":
-        if n[int(trigger_id["index"])-1] is not None:
+        if n[int(trigger_id["index"])-1] is not None and is_not_selected[int(trigger_id["index"])-1]:
             print(n[int(trigger_id["index"])-1])
             with open("dashboards/" + title) as json_file:
                 dash_data = json.load(json_file)
@@ -224,6 +240,16 @@ def update_selected_cont(n, title):
             return n
     return dash.no_update
 
+#Callback para abrir opciones
+@callback(Output("config_col", "class_name"), Input({"type":"config", "index":ALL}, "n_clicks"), State("config_col", "class_name"), prevent_initial_call=True)
+def switch_graph_config(n, classname):
+    trigger_id = ctx.triggered_id
+    if n[int(trigger_id["index"])-1] is not None:
+        if classname == "config-col-closed":
+            return "config-col-open"
+        if classname == "config-col-open":
+            return "config-col-closed"
+    return dash.no_update
 
 #Options callbacks
 @callback(Output("options-slider-cont", "className"), Input("slider-button", "n_clicks"), State("options-slider-cont", "className"))

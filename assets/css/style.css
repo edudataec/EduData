@@ -117,9 +117,32 @@
   }
 
   .col-button{
-    background-color: aqua;
-    width: 25%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1/1;
     height: 25%;
+  }
+
+  .cont-opt-img {
+    width: 70%;
+    height: 70%;
+    opacity: 50%;
+  }
+
+  .cont-opt-img:hover{
+    width: 70%;
+    height: 70%;
+    opacity: 90%;
+  }
+
+  .config-col-closed {
+    background-color: white;
+    display: none;
+  }
+
+  .config-col-open {
+    background-color: white;
   }
 
 @media (min-width: 576px) { 
