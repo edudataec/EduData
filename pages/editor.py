@@ -307,9 +307,10 @@ def graph_modal(n, n2, n3, is_open):
     Output("main_row", "children"), 
     Input("add-cont-button", "n_clicks"),
     Input("update_editor_target", "children"),
-    State("project_title", "data")
+    State("project_title", "data"),
+    State("main_row", "children")
 )
-def update_editor(n_add, update, title):
+def update_editor(n_add, update, title, children):
     trigger = ctx.triggered_id
     with open("dashboards/" + title) as json_file:
         dash_data = json.load(json_file)
@@ -317,8 +318,9 @@ def update_editor(n_add, update, title):
     content = []
 
     #Añadir contenedor vacío al json
-    if trigger == "add-cont-button":
-        add_cont_to_json(n_add, title, dash_data)
+    if trigger == "add-cont-button" and n_add is not None:
+        children.append(add_cont_to_json(n_add, title, dash_data))
+        return children
 
     #Cargar elementos del json
     return render_from_json(dash_data)
@@ -326,7 +328,7 @@ def update_editor(n_add, update, title):
 def add_cont_to_json(n_add, title, dash_data):
 
     contenedores = dash_data["contenedores"].copy()
-    next_index = int(sorted(contenedores, key=lambda r: r["index"], reverse=True)[0]["index"])+1
+    next_index = int(sorted(contenedores, key=lambda r: int(r["index"]), reverse=True)[0]["index"])+1
 
     dash_data["contenedores"].append(
         {
@@ -340,6 +342,52 @@ def add_cont_to_json(n_add, title, dash_data):
     )
     with open("dashboards/" + title, "w") as outfile:
         json.dump(dash_data, outfile) 
+
+    col_buttons_no_graph = html.Div(
+                            [
+                                html.Div(
+                                    html.Img(
+                                        src="assets/imgs/add_graph.png",
+                                        className="cont-opt-img"
+                                    ),
+                                    id={"type":"graph", "index":str(next_index)},
+                                    className="col-button"
+                                ),
+                                html.Div(
+                                    html.Img(
+                                        src="assets/imgs/options.png",
+                                        className="cont-opt-img"
+                                    ),
+                                    id={"type":"config", "index":str(next_index)},
+                                    className="col-button"
+                                ),
+                                html.Div(
+                                    html.Img(
+                                        src="assets/imgs/remove.png",
+                                        className="cont-opt-img"
+                                    ),
+                                    id={"type":"remove", "index":str(next_index)},
+                                    className="col-button"
+                                )
+                            ],
+                            id={"type":"cont_opt", "index":str(next_index)},
+                            hidden=True,
+                            className="col-buttons-cont-lg"
+                        )
+
+    column = dbc.Col(
+                        html.Div(
+                            [
+                                col_buttons_no_graph,
+                            ],
+                            id={"type":"cont", "index":str(next_index)},
+                            className="graph-cont"
+                        ),
+                        id={"type":"col", "index":str(next_index)},
+                        width={"size":4, "order":str(next_index)},
+                        className="graph-col"
+                    )
+    return column
 
 def render_from_json(dash_data):
     content = []
@@ -388,16 +436,28 @@ def render_from_json(dash_data):
         col_buttons_graph = html.Div(
                             [
                                 html.Div(
+                                    html.Img(
+                                        src="assets/imgs/add_graph.png",
+                                        className="cont-opt-img"
+                                    ),
                                     id={"type":"graph", "index":cont["index"]},
-                                    className="col-button"
+                                    className="col-button-sm"
                                 ),
                                 html.Div(
+                                    html.Img(
+                                        src="assets/imgs/options.png",
+                                        className="cont-opt-img"
+                                    ),
                                     id={"type":"config", "index":cont["index"]},
-                                    className="col-button"
+                                    className="col-button-sm"
                                 ),
                                 html.Div(
+                                    html.Img(
+                                        src="assets/imgs/remove.png",
+                                        className="cont-opt-img"
+                                    ),
                                     id={"type":"remove", "index":cont["index"]},
-                                    className="col-button"
+                                    className="col-button-sm"
                                 )
                             ],
                             id={"type":"cont_opt", "index":cont["index"]},
@@ -407,8 +467,28 @@ def render_from_json(dash_data):
 
         match cont["graph"]["type"]:
             case "bar":
-                graph = dcc.Graph(figure = px.bar(data_frame=df, x=cont["graph"]["x"], y=cont["graph"]["y"], title=cont["graph"]["title"], barmode=cont["graph"]["barmode"], color=cont["graph"]["color"]), id={'type':cont["graph"]['type'], "index":cont['index']})
-                content.append(dbc.Col(graph, id=cont["id"], width=cont["width"]))
+                graph = dcc.Graph(
+                    figure = px.bar(data_frame=df, x=cont["graph"]["x"], y=cont["graph"]["y"], title=cont["graph"]["title"], barmode=cont["graph"]["barmode"],
+                             color=cont["graph"]["color"]), id={'type':cont["graph"]['type'], "index":cont['index']},
+                    responsive=True,
+                    style={"height":"88%", "width":"100%"}
+                )
+                content.append(
+                    dbc.Col(
+                        html.Div(
+                            [
+                                col_buttons_graph,
+                                graph
+                            ],
+                            id={"type":"cont", "index":cont["index"]},
+                            className="graph-cont"
+                        ),
+                        id={"type":"col", "index":cont["index"]},
+                        width={"size":4, "order":cont["index"]},
+                        className="graph-col",
+                        style=selected_style
+                    )
+                )
             case "none":
                 content.append(
                     dbc.Col(
@@ -456,11 +536,11 @@ def update_selected_cont(n, n2, n3, title, is_not_selected):
             item for item in dash_data["contenedores"] if item.get("index") != trigger_id["index"]
         ]
 
-        dash_data["contenedores"] = sorted(dash_data["contenedores"], key=lambda r: r["index"], reverse=False)
+        dash_data["contenedores"] = sorted(dash_data["contenedores"], key=lambda r: int(r["index"]), reverse=False)
 
         index = 1
         for cont in dash_data["contenedores"]:
-            cont["index"] = index
+            cont["index"] = str(index)
             index+=1
 
         print(dash_data["contenedores"])
