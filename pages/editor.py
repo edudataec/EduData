@@ -1,6 +1,7 @@
 import json
 import dash
 from dash import Dash, dcc, Output, Input, html, page_container, callback, State, MATCH, ctx, ALL
+from .utils.util import pandas_load_wrapper
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
@@ -131,9 +132,10 @@ layout = html.Div(
     Output("graph_class_col", "children"),
     Input({"type":"graph", "index":ALL}, "n_clicks"),
     Input({"type":"graph_tog", "name":ALL, "index":ALL}, "n_clicks"),
+    Input({"type":"new_graph", "name":ALL, "index":ALL}, "n_clicks"),
     State("graph_dialg", "is_open") 
 )
-def graph_modal(n, n2, is_open):
+def graph_modal(n, n2, n3, is_open):
     trigger = ctx.triggered_id
 
     graph_class_toggle_col = [
@@ -166,6 +168,7 @@ def graph_modal(n, n2, is_open):
                     [
                         html.Img(
                             src="assets/imgs/bar_tr.png",
+                            id={"type":"new_graph", "name":"bar", "index":"0"},
                             className="graph_selec_img"
                         ),
                         html.Div(
@@ -178,6 +181,7 @@ def graph_modal(n, n2, is_open):
                     [
                         html.Img(
                             src="assets/imgs/bar_h_tr.png",
+                            id={"type":"new_graph", "name":"bar_h", "index":"1"},
                             className="graph_selec_img"
                         ),
                         html.Div(
@@ -190,6 +194,7 @@ def graph_modal(n, n2, is_open):
                     [
                         html.Img(
                             src="assets/imgs/scatter_tr.png",
+                            id={"type":"new_graph", "name":"scatter", "index":"2"},
                             className="graph_selec_img"
                         ),
                         html.Div(
@@ -207,6 +212,7 @@ def graph_modal(n, n2, is_open):
                     [
                         html.Img(
                             src="assets/imgs/line_tr.png",
+                            id={"type":"new_graph", "name":"line", "index":"3"},
                             className="graph_selec_img"
                         ),
                         html.Div(
@@ -219,6 +225,7 @@ def graph_modal(n, n2, is_open):
                     [
                         html.Img(
                             src="assets/imgs/bubl_tr.png",
+                            id={"type":"new_graph", "name":"bubl", "index":"4"},
                             className="graph_selec_img"
                         ),
                         html.Div(
@@ -231,6 +238,7 @@ def graph_modal(n, n2, is_open):
                     [
                         html.Img(
                             src="assets/imgs/pie_tr.png",
+                            id={"type":"new_graph", "name":"pie", "index":"5"},
                             className="graph_selec_img"
                         ),
                         html.Div(
@@ -243,10 +251,7 @@ def graph_modal(n, n2, is_open):
             className="graph_opt_row"
         )
     ]
-    
-    print(trigger)
-    print(n)
-    print(n2)
+
     if not is_open and trigger["type"] == "graph" and n[int(trigger["index"])-1] is not None:
         return True, graph_class_toggle_col, graph_class_col
     elif trigger["type"] == "graph_tog" and n2[int(trigger["index"])] is not None:
@@ -294,9 +299,9 @@ def graph_modal(n, n2, is_open):
                 return True, graph_class_toggle_col, graph_class_col
             case _:
                 return dash.no_update, dash.no_update, dash.no_update
+    elif trigger["type"] == "new_graph" and n3[int(trigger["index"])] is not None:
+        return False, dash.no_update, dash.no_update
     return dash.no_update, dash.no_update, dash.no_update
-
-
 
 @callback(
     Output("main_row", "children"), 
@@ -338,6 +343,7 @@ def add_cont_to_json(n_add, title, dash_data):
 
 def render_from_json(dash_data):
     content = []
+    df = pandas_load_wrapper(dash_data["data_path"])
     for cont in dash_data["contenedores"]:
 
         if cont["index"] == dash_data["selected"]:
@@ -428,11 +434,12 @@ def render_from_json(dash_data):
     Output("update_editor_target", "children"),
     Input({"type":"cont", "index":ALL}, "n_clicks"),
     Input({"type":"remove", "index":ALL}, "n_clicks"),
+    Input({"type":"new_graph", "name":ALL, "index":ALL}, "n_clicks"),
     State("project_title", "data"),
     State({"type":"cont_opt", "index":ALL}, "hidden"),
     prevent_initial_call=True
 )
-def update_selected_cont(n, n2, title, is_not_selected):
+def update_selected_cont(n, n2, n3, title, is_not_selected):
     trigger_id = ctx.triggered_id
     with open("dashboards/" + title) as json_file:
         dash_data = json.load(json_file)
@@ -460,10 +467,31 @@ def update_selected_cont(n, n2, title, is_not_selected):
         
         with open("dashboards/" + title, "w") as outfile:
             json.dump(dash_data, outfile) 
-        return n
+        return n2[int(trigger_id["index"])-1]
+    elif trigger_id["type"] == "new_graph" and n3[int(trigger_id["index"])] is not None:
+        target_cont = next((item for item in dash_data["contenedores"] if item["index"] == dash_data["selected"]))
+
+        df = pandas_load_wrapper(dash_data["data_path"])
+        print(df)
+
+        match trigger_id["name"]:
+            case "bar":
+                target_cont["graph"] = {
+                    "type": "bar",
+                    "x": df.columns[0],
+                    "y": df.columns[0],
+                    "title": "",
+                    "barmode": "group",
+                    "color": df.columns[0]
+                }
+            case _:
+                target_cont["graph"] = {
+                    "type":"none"
+                }
+        with open("dashboards/" + title, "w") as outfile:
+            json.dump(dash_data, outfile) 
+        return n3[int(trigger_id["index"])]
     return dash.no_update
-
-
 
 #Callback para abrir opciones
 @callback(Output("config_col", "class_name"), Input({"type":"config", "index":ALL}, "n_clicks"), State("config_col", "class_name"), prevent_initial_call=True)

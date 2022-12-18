@@ -3,6 +3,7 @@ import os
 import re
 import json
 from dash import Dash, dcc, Output, Input, State, html, page_container, callback, dash_table, ctx
+from .utils.util import pandas_load_wrapper
 import dash_bootstrap_components as dbc
 import pandas as pd
 import tkinter as tk
@@ -129,16 +130,7 @@ def load_data(ts, datapath):
     if ts is not None:
         try:
             df = pd.DataFrame()
-            file_extension = os.path.splitext(os.path.basename(datapath))[1]
-            print(file_extension)
-            if file_extension == ".csv":
-                df = pd.read_csv(datapath)
-                df['index'] = range(1, len(df)+1)
-                print(df.columns)
-            elif re.match("^\.(xls|xlsx|xlsm|xlsb|odf|ods|odt)$", file_extension):
-                print('Excel')
-                df = pd.read_excel(datapath)
-                print(df)
+            df = pandas_load_wrapper(datapath)
         except:
             print("error")
         columns = [{'name': i, 'id': i, 'deletable': True} for i in sorted(df.columns)]
