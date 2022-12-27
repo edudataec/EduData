@@ -3,8 +3,8 @@ from dash import Dash, html, page_container, dcc, Output, Input, State, ALL
 import dash_bootstrap_components as dbc
 import webview
 
-app = Dash(__name__, external_stylesheets=["assets/css/bootstrap.min.css", "assets/css/style.css"], external_scripts=["assets/js/custom.js", "assets/js/jquery.min.js"], assets_folder='assets', assets_external_path="",
-             assets_url_path="/assets", include_assets_files=True, serve_locally=True, use_pages=True)
+app = Dash(__name__, external_stylesheets=["assets/css/bootstrap.min.css", "assets/css/style.css", dbc.icons.FONT_AWESOME], external_scripts=["assets/js/custom.js", "assets/js/jquery.min.js"], assets_folder='assets', assets_external_path="",
+             assets_url_path="/assets", include_assets_files=True, use_pages=True)
 
 app.layout = html.Div(
     [
