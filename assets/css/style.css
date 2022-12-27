@@ -89,133 +89,172 @@
     width: 70%;
   }
 
-  .graph-col{
-    border: 1px solid black;
-    background-color:white;
-    min-height:200px;
-    padding: 0;
-    margin:10px
-  }
+  .mantine-Accordion-content > div {
+    background-color: rgba(0,0,0,0.15);
+    padding-left: 5px;
+    padding-right: 5px;
+    margin-left: -10px;
+}
 
-  .graph-col:hover {
-    border: 1px solid lightskyblue;
-  }
-
-  .graph-cont {
-    display: flex;
-    flex-direction: column;
-    height: 400px;
+#errorsCanvas {
     width: 100%;
-  }
+    max-height: 25vh;
+    overflow-y: auto;
+    color: red;
+}
 
-  .col-buttons-cont-lg{
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-    width: 100%;
+#errorsCanvas > pre {
+    border: 1pt solid silver;
+}
+
+#design-area .dash-graph {
+  box-shadow: 5px 2px 15px black;
+  position: absolute;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+#design-area.edit .dash-graph {
+  resize: both;
+  padding-right: 30px;
+  padding-bottom: 0.5%;
+  border: 2pt dashed black;
+}
+
+#design-area.edit .dash-graph>div:first-of-type {
+    z-index: 1;
+    position: absolute;
+    width: 98%;
     height: 100%;
-  }
-
-  .col-buttons-cont-sm{
     display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    width: 100%;
-    height: 12%;
-  }
-
-  .col-button{
-    display: flex;
-    align-items: center;
     justify-content: center;
-    aspect-ratio: 1/1;
-    width: 25%;
-  }
-
-  .col-button-sm{
-    display: flex;
     align-items: center;
-    justify-content: center;
-    aspect-ratio: 1/1;
-    height: 6vh;
-  }
+}
 
-  .cont-opt-img {
-    width: 70%;
-    height: 70%;
+#design-area.edit .fa-solid {
+    font-size: 30pt;
+    border-radius: 30px;
+    padding: 10px;
+    box-shadow: 2px 2px 5px black;
+    margin: 5px;
+    cursor: pointer;
+}
+
+#design-area.edit .fa-up-down-left-right {
+    cursor: move;
+}
+
+#design-area.edit .dash-graph .js-plotly-plot {
+    z-index: -1;
     opacity: 50%;
-  }
+    overflow: hidden;
+    max-height: 100%;
+    max-width: 100%;
+}
 
-  .cont-opt-img:hover{
-    width: 70%;
-    height: 70%;
-    opacity: 90%;
-  }
+.nav-pills .nav-link.active {
+    color: #fff;
+    background-color: black;
+}
 
-  .config-col-closed {
-    background-color: white;
+body {
+    font-size: 12pt;
+}
+
+#design-holder {
+    border: 1pt solid black;
+    border-radius: 5px
+}
+
+#design-holder button {
+    margin: 1%;
+    box-shadow:5px 2px 10px black;
+}
+
+#design-holder #openDesignEditor,  #design-holder #saveLayout, #design-holder #deleteLayout {
+    display: none
+}
+
+#design-holder.edit #openDesignEditor, #design-holder.edit #saveLayout, #design-holder.edit #deleteLayout {
+    display: initial
+}
+
+.locked {
+    content: "Loading Please Wait";
+    z-index: -50;
+    opacity: 0.2;
+}
+
+.hidden {
     display: none;
-  }
+}
 
-  .config-col-open {
-    background-color: white;
-  }
+#design-holder {
+    width:98%;
+    height:80%;
+    position:absolute;
+}
 
-  #graph_class_toggle_col {
-    padding: 0;
-    border-right: 1px solid gray;
-  }
+#design-holder.expanded {
+    width:98%;
+    height:92%;
+    position:absolute;
+}
 
-  .graph_toggle {
+#design-area {
+    overflow: auto;
+}
+
+.modebar:hover {
+    display: block;
+}
+
+#statusAlert #alert {
+    height: 100%;
+    font-size: 1.5em;
+    border-radius: 5px;
     display: flex;
-    align-items: center;
     justify-content: center;
-    border-top: 1px solid gray;
-    border-bottom: 1px solid gray;
-    font-weight: bold;
-    height: 15%;
-  }
+}
 
-  .graph_toggle_selected {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-top: 1px solid gray;
-    border-bottom: 1px solid gray;
-    font-weight: bold;
-    background-color: lightgray;
-    height: 15%;
-  }
+#design-area.edit {
+  background-size: 50px 50px;
+  background-image:
+    linear-gradient(to right, rgba(0,0,0,0.125) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,0.125) 1px, transparent 1px);
+}
 
-  .graph_opt_row {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: space-evenly;
-  }
+.focused-graph .modebar {
+ z-index: 2;
+}
 
-  .graph_opt_selec {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin:3%;
-    font-size: 1.7vh;
-    text-align: center;
-  }
+#jyada {
+    position: absolute;
+    z-index: 9999;
+    transition: all 1s ease-out;
+    height: 120px;
+    width: 80px;
+    cursor: pointer;
+}
 
-  .graph_selec_img{
-    width: 73px;
-    height: 75px;
-    margin-bottom: 10%;
-  }
+#jyada.sleeping {
+    right: 30px;
+    top: 5px;
+    height: 50px;
+    width: 35px;
+}
 
-  .graph_selec_img:hover {
-    background-color: lightgray;
-    width: 73px;
-    height: 75px;
-    margin-bottom: 10%;
-  }
+.highlighting {
+    box-shadow: 0px 0px 15px yellow;
+}
+
+input.highlighting {
+    border: 5px yellow;
+}
+
+button.hightlighting {
+    border: 5px yellow;
+}
 
 @media (min-width: 576px) { 
     .card-title{

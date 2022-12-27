@@ -1,10 +1,18 @@
 import json
 import dash
-from dash import Dash, dcc, Output, Input, html, page_container, callback, State, MATCH, ctx, ALL
+from dash import Dash, dcc, Output, Input, html, page_container, callback, State, MATCH, ctx, ALL, clientside_callback
 from .utils.util import pandas_load_wrapper
+from .utils.makeCharts import makeCharts, getOpts, parseSelections, makeDCC_Graph
+from inspect import getmembers, isfunction
+from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
 import plotly.express as px
 import pandas as pd
+
+px_list = getmembers(px, isfunction)
+chartOpts = ["px." + i for i, y in px_list]  # +['go.'+i for i, y in go_list]
+offCanvStyle = {"borderRadius": "15px"}
 
 dash.register_page(__name__, name='editor')
 
@@ -34,561 +42,329 @@ layout = html.Div(
             dark=True,
             links_left=True
         ),
-        dbc.Container(
-            dbc.Row(
+        html.Div(
+            html.Div(
                 [
-                    dbc.Col(
+                    html.Div(
+                        id="design-area",
+                        children=[],
+                        style={
+                            "backgroundColor": "#c5c6d0",
+                            "position": "absolute",
+                            "height": "100%",
+                            "width": "100%",
+                        },
+                    ),
+                    dcc.Graph(id={'index':'edit', 'type':"testFigure"}, style={"display": "none"}),
+                    dbc.Offcanvas(
                         [
-                            dbc.Row(
-                                [
-
-                                ],
-                                id="main_row"
+                            "Select the chart type and options below",
+                            dcc.Dropdown(
+                                id={"index": "edit", "type": "selectChart_edit"},
+                                options=chartOpts,
                             ),
-                            html.Div(
-                                dbc.Button("+", id="add-cont-button", style={"font-size":"4vh", "border-radius":"100%", "width":"7vh", "height":"7vh"}),
-                                style={"position":"fixed", "right":"10px", "bottom":"10px"}
+                            dbc.Button(
+                                id={"index": "edit", "type": "persistenceClear_edit"},
+                                children="Clear All Values",
+                                className="m-3",
+                                color="info",
+                                style={"visibility": "hidden"},
                             ),
-                            html.Div(
+                            dmc.Accordion(
+                                id={"index": "edit", "type": "graphingOptions_edit"},
+                            ),
+                            dcc.Loading(
                                 [
-                                    html.Div(
-                                        html.Img(
-                                            src="assets/imgs/arrows.png",
-                                            id="slider-button"
-                                        ),
-                                        className="slider-button-cont"
-                                    ),
-                                    html.Div(
-                                        [
-                                            dbc.Button("IMPORTAR", id="imp_button"),
-                                            dbc.Button("EXPORTAR", id="exp_button")
-                                        ],
-                                        className="slider-opt-cont"
+                                    dbc.Button(
+                                        "Make Changes",
+                                        id={"index": "edit", "type": "submitEdits_edit"},
+                                        className="m-3",
+                                        style={"visibility": "hidden"},
                                     ),
                                 ],
-                                id="options-slider-cont",
-                                className="options-slider-cont-up"
+                                id="buttonLoading_edit",
                             ),
                         ],
-                        id="editor_col",
-                        style={"background-color":"lightgrey", "min-height":"100vh", "height":"auto"},
-                        width=True
+                        id="chartDesignEditor",
+                        style=offCanvStyle,
                     ),
-                    dbc.Col(
+                    dbc.Offcanvas(
                         [
-                            dcc.Markdown("Prueba"),
-                            dcc.Markdown("Prueba"),
-                            dcc.Markdown("Prueba"),
-                            dcc.Markdown("Prueba"),
-                            dcc.Markdown("Prueba"),
-                            dcc.Markdown("Prueba"),
-                        ],
-                        id="config_col",
-                        class_name="config-col-closed",
-                        width=2
-                    ),
-                    html.Div(id="update_editor_target", hidden=True)
-                ],
-                id="main_container",
-            ),
-            fluid=True
-        ),
-        dbc.Modal(
-            [
-                dbc.ModalHeader(),
-                dbc.ModalBody(
-                    dbc.Row(
-                        [
-                            dbc.Col(
-                                [],
-                                width=4, lg=3, xl=2, xxl=2,
-                                id="graph_class_toggle_col"
+                            "Select the chart type and options below",
+                            dcc.Dropdown(
+                                id={"index": "2", "type": "selectChart_edit"}, options=chartOpts
                             ),
-                            dbc.Col(
-                                [],
-                                width=True,
-                                id="graph_class_col"
+                            dbc.Button(
+                                id={"index": "2", "type": "persistenceClear_edit"},
+                                children="Clear All Values",
+                                className="m-3",
+                                color="info",
+                                style={"visibility": "hidden"},
+                            ),
+                            dmc.Accordion(
+                                id={"index": "2", "type": "graphingOptions_edit"},
+                            ),
+                            dcc.Loading(
+                                [
+                                    dbc.Button(
+                                        "Make Changes",
+                                        id={"index": "2", "type": "submitEdits_edit"},
+                                        className="m-3",
+                                        style={"visibility": "hidden"},
+                                    )
+                                ],
+                                id="buttonLoading_edit2",
+                            ),
+                        ],
+                        id="chartDesignEditor_edit",
+                        style=offCanvStyle,
+                    ),
+                    html.Div(
+                        [
+                            dbc.Button(
+                                "Toggle Edit Mode",
+                                id="toggleEdit",
+                                color="warning",
+                                className="me-1",
+                                n_clicks=0,
+                            ),
+                            dbc.Button(
+                                id="openDesignEditor",
+                                children="Add Chart",
+                                n_clicks=0,
+                                className="me-1",
+                            ),
+                            dbc.Button(
+                                id="saveLayout",
+                                children="Save Layout",
+                                n_clicks=0,
+                                className="me-1",
+                                color="success",
+                            ),
+                            dbc.Button(
+                                id="exportLayout",
+                                children="Export Layout",
+                                n_clicks=0,
+                                className="me-1",
+                                color="info",
+                            ),
+                            dcc.Download(id="layoutDownload"),
+                            dbc.Button(
+                                id="deleteLayout",
+                                children="Delete Layout",
+                                n_clicks=0,
+                                className="me-1",
+                                color="danger",
                             )
                         ],
-                        style={"width":"100%", "height":"100%", "margin":"0"}
+                        style={"zIndex": "1", "position": "absolute", "width": "100%"},
                     ),
-                    style={"padding":"0"}
-                ),
-            ],
-            id="graph_dialg",
-            size="xl",
-            is_open=False
+                    dbc.Button(id="editActive", style={"display": "none"}),
+                    dbc.Button(id="syncStore", style={"display": "none"}),
+                    dbc.Button(id="deleteTarget", style={"display": "none"}),
+                ],
+                id="design-holder",
+            ), style={"margin": "1%", "height": "98%", "width": "98%"}
         ),
+        html.Div(id='preloadData')
     ]
 )
 
-#Graph callbacks
-
-
-#Editor callbacks
 @callback(
-    Output("graph_dialg", "is_open"),
-    Output("graph_class_toggle_col", "children"),
-    Output("graph_class_col", "children"),
-    Input({"type":"graph", "index":ALL}, "n_clicks"),
-    Input({"type":"graph_tog", "name":ALL, "index":ALL}, "n_clicks"),
-    Input({"type":"new_graph", "name":ALL, "index":ALL}, "n_clicks"),
-    State("graph_dialg", "is_open") 
+    Output("chartEditor", "is_open"),
+    Input("openEditor", "n_clicks"),
+    State("chartEditor", "is_open"),
+    prevent_initial_call=True,
 )
-def graph_modal(n, n2, n3, is_open):
-    trigger = ctx.triggered_id
-
-    graph_class_toggle_col = [
-        html.Div(
-            'Simple',
-            id={"type":"graph_tog", "name":"simple", "index":"0"},
-            className="graph_toggle_selected"
-        ),
-        html.Div(
-            'Distribución',
-            id={"type":"graph_tog", "name":"distrib", "index":"1"},
-            className="graph_toggle"
-        ),
-        html.Div(
-            'Finanzas',
-            id={"type":"graph_tog", "name":"finan", "index":"2"},
-            className="graph_toggle"
-        ),
-        html.Div(
-            'Avanzado',
-            id={"type":"graph_tog", "name":"adv", "index":"3"},
-            className="graph_toggle"
-        ),
-    ]
-
-    graph_class_col = [
-        html.Div(
-            [
-                html.Div(
-                    [
-                        html.Img(
-                            src="assets/imgs/bar_tr.png",
-                            id={"type":"new_graph", "name":"bar", "index":"0"},
-                            className="graph_selec_img"
-                        ),
-                        html.Div(
-                            "Gráfico de barras vertical"
-                        )
-                    ],
-                    className="graph_opt_selec"
-                ),
-                html.Div(
-                    [
-                        html.Img(
-                            src="assets/imgs/bar_h_tr.png",
-                            id={"type":"new_graph", "name":"bar_h", "index":"1"},
-                            className="graph_selec_img"
-                        ),
-                        html.Div(
-                            "Gráfico de barras horizontal"
-                        )
-                    ],
-                    className="graph_opt_selec"
-                ),
-                html.Div(
-                    [
-                        html.Img(
-                            src="assets/imgs/scatter_tr.png",
-                            id={"type":"new_graph", "name":"scatter", "index":"2"},
-                            className="graph_selec_img"
-                        ),
-                        html.Div(
-                            "Gráfico de dispersión"
-                        )
-                    ],
-                    className="graph_opt_selec"
-                ),
-            ],
-            className="graph_opt_row"
-        ),
-        html.Div(
-            [
-                html.Div(
-                    [
-                        html.Img(
-                            src="assets/imgs/line_tr.png",
-                            id={"type":"new_graph", "name":"line", "index":"3"},
-                            className="graph_selec_img"
-                        ),
-                        html.Div(
-                            "Gráfico de líneas"
-                        )
-                    ],
-                    className="graph_opt_selec"
-                ),
-                html.Div(
-                    [
-                        html.Img(
-                            src="assets/imgs/bubl_tr.png",
-                            id={"type":"new_graph", "name":"bubl", "index":"4"},
-                            className="graph_selec_img"
-                        ),
-                        html.Div(
-                            "Gráfico de burbujas"
-                        )
-                    ],
-                    className="graph_opt_selec"
-                ),
-                html.Div(
-                    [
-                        html.Img(
-                            src="assets/imgs/pie_tr.png",
-                            id={"type":"new_graph", "name":"pie", "index":"5"},
-                            className="graph_selec_img"
-                        ),
-                        html.Div(
-                            "Pie chart"
-                        )
-                    ],
-                    className="graph_opt_selec"
-                ),
-            ],
-            className="graph_opt_row"
-        )
-    ]
-
-    if not is_open and trigger["type"] == "graph" and n[int(trigger["index"])-1] is not None:
-        return True, graph_class_toggle_col, graph_class_col
-    elif trigger["type"] == "graph_tog" and n2[int(trigger["index"])] is not None:
-        match trigger["name"]:
-            case "simple":
-                return True, graph_class_toggle_col, graph_class_col
-            case "distrib":
-                #Cambiar la opción seleccionada
-                graph_class_toggle_col[0] = html.Div(
-                                                'Simple',
-                                                id={"type":"graph_tog", "name":"simple", "index":"0"},
-                                                className="graph_toggle"
-                                            )
-                graph_class_toggle_col[1] = html.Div(
-                                                'Distribución',
-                                                id={"type":"graph_tog", "name":"distrib", "index":"1"},
-                                                className="graph_toggle_selected"
-                                            )
-                return True, graph_class_toggle_col, graph_class_col
-            case "finan":
-                #Cambiar la opción seleccionada
-                graph_class_toggle_col[0] = html.Div(
-                                                'Simple',
-                                                id={"type":"graph_tog", "name":"simple", "index":"0"},
-                                                className="graph_toggle"
-                                            )
-                graph_class_toggle_col[2] = html.Div(
-                                                'Finanzas',
-                                                id={"type":"graph_tog", "name":"finan", "index":"2"},
-                                                className="graph_toggle_selected"
-                                            )
-                return True, graph_class_toggle_col, graph_class_col
-            case "adv":
-                #Cambiar la opción seleccionada
-                graph_class_toggle_col[0] = html.Div(
-                                                'Simple',
-                                                id={"type":"graph_tog", "name":"simple", "index":"0"},
-                                                className="graph_toggle"
-                                            )
-                graph_class_toggle_col[3] = html.Div(
-                                                'Avanzado',
-                                                id={"type":"graph_tog", "name":"adv", "index":"3"},
-                                                className="graph_toggle_selected"
-                                            )
-                return True, graph_class_toggle_col, graph_class_col
-            case _:
-                return dash.no_update, dash.no_update, dash.no_update
-    elif trigger["type"] == "new_graph" and n3[int(trigger["index"])] is not None:
-        return False, dash.no_update, dash.no_update
-    return dash.no_update, dash.no_update, dash.no_update
+@callback(
+    Output("chartDesignEditor", "is_open"),
+    Input("openDesignEditor", "n_clicks"),
+    State("chartDesignEditor", "is_open"),
+    prevent_initial_call=True,
+)
+@callback(
+    Output("sidebar", "is_open"),
+    Input("sidebarButton", "n_clicks"),
+    State("sidebar", "is_open"),
+    prevent_initial_call=True,
+)
+def openEditor(n1, isOpen):
+    if n1 > 0:
+        return not isOpen
+    return isOpen
 
 @callback(
-    Output("main_row", "children"), 
-    Input("add-cont-button", "n_clicks"),
-    Input("update_editor_target", "children"),
-    State("project_title", "data"),
-    State("main_row", "children")
+    Output("chartDesignEditor_edit", "is_open"),
+    Output({"type": "selectChart_edit", "index": "2"}, "value"),
+    Input("editActive", "n_clicks"),
+    State("chartDesignEditor_edit", "is_open"),
+    State("focused-graph", "data"),
+    State("figures", "data"),
+    prevent_initial_call=True,
 )
-def update_editor(n_add, update, title, children):
-    trigger = ctx.triggered_id
-    with open("dashboards/" + title) as json_file:
-        dash_data = json.load(json_file)
-    print(dash_data)
-    content = []
+def openEditor_edit(n1, isOpen, id, figs):
+    if n1 > 0:
+        for f in figs:
+            if f["id"] == json.loads(id):
+                chart = f["chart"]
+        return not isOpen, chart
+    return isOpen
 
-    #Añadir contenedor vacío al json
-    if trigger == "add-cont-button" and n_add is not None:
-        children.append(add_cont_to_json(n_add, title, dash_data))
-        return children
-
-    #Cargar elementos del json
-    return render_from_json(dash_data)
-
-def add_cont_to_json(n_add, title, dash_data):
-
-    contenedores = dash_data["contenedores"].copy()
-    next_index = int(sorted(contenedores, key=lambda r: int(r["index"]), reverse=True)[0]["index"])+1
-
-    dash_data["contenedores"].append(
-        {
-            "id":"cont_" + str(next_index),
-            "index":str(next_index),
-            "width":"4",
-            "graph":{
-                "type":"none"
-            }
-        }
-    )
-    with open("dashboards/" + title, "w") as outfile:
-        json.dump(dash_data, outfile) 
-
-    col_buttons_no_graph = html.Div(
-                            [
-                                html.Div(
-                                    html.Img(
-                                        src="assets/imgs/add_graph.png",
-                                        className="cont-opt-img"
-                                    ),
-                                    id={"type":"graph", "index":str(next_index)},
-                                    className="col-button"
-                                ),
-                                html.Div(
-                                    html.Img(
-                                        src="assets/imgs/options.png",
-                                        className="cont-opt-img"
-                                    ),
-                                    id={"type":"config", "index":str(next_index)},
-                                    className="col-button"
-                                ),
-                                html.Div(
-                                    html.Img(
-                                        src="assets/imgs/remove.png",
-                                        className="cont-opt-img"
-                                    ),
-                                    id={"type":"remove", "index":str(next_index)},
-                                    className="col-button"
-                                )
-                            ],
-                            id={"type":"cont_opt", "index":str(next_index)},
-                            hidden=True,
-                            className="col-buttons-cont-lg"
-                        )
-
-    column = dbc.Col(
-                        html.Div(
-                            [
-                                col_buttons_no_graph,
-                            ],
-                            id={"type":"cont", "index":str(next_index)},
-                            className="graph-cont"
-                        ),
-                        id={"type":"col", "index":str(next_index)},
-                        width={"size":4, "order":str(next_index)},
-                        className="graph-col"
-                    )
-    return column
-
-def render_from_json(dash_data):
-    content = []
-    df = pandas_load_wrapper(dash_data["data_path"])
-    for cont in dash_data["contenedores"]:
-
-        if cont["index"] == dash_data["selected"]:
-            disable_opt = False
-            selected_style = {"border-color":"lightskyblue"}
-        else:
-            disable_opt = True
-            selected_style = {}
-
-        col_buttons_no_graph = html.Div(
-                            [
-                                html.Div(
-                                    html.Img(
-                                        src="assets/imgs/add_graph.png",
-                                        className="cont-opt-img"
-                                    ),
-                                    id={"type":"graph", "index":cont["index"]},
-                                    className="col-button"
-                                ),
-                                html.Div(
-                                    html.Img(
-                                        src="assets/imgs/options.png",
-                                        className="cont-opt-img"
-                                    ),
-                                    id={"type":"config", "index":cont["index"]},
-                                    className="col-button"
-                                ),
-                                html.Div(
-                                    html.Img(
-                                        src="assets/imgs/remove.png",
-                                        className="cont-opt-img"
-                                    ),
-                                    id={"type":"remove", "index":cont["index"]},
-                                    className="col-button"
-                                )
-                            ],
-                            id={"type":"cont_opt", "index":cont["index"]},
-                            hidden=disable_opt,
-                            className="col-buttons-cont-lg"
-                        )
-
-        col_buttons_graph = html.Div(
-                            [
-                                html.Div(
-                                    html.Img(
-                                        src="assets/imgs/add_graph.png",
-                                        className="cont-opt-img"
-                                    ),
-                                    id={"type":"graph", "index":cont["index"]},
-                                    className="col-button-sm"
-                                ),
-                                html.Div(
-                                    html.Img(
-                                        src="assets/imgs/options.png",
-                                        className="cont-opt-img"
-                                    ),
-                                    id={"type":"config", "index":cont["index"]},
-                                    className="col-button-sm"
-                                ),
-                                html.Div(
-                                    html.Img(
-                                        src="assets/imgs/remove.png",
-                                        className="cont-opt-img"
-                                    ),
-                                    id={"type":"remove", "index":cont["index"]},
-                                    className="col-button-sm"
-                                )
-                            ],
-                            id={"type":"cont_opt", "index":cont["index"]},
-                            hidden=disable_opt,
-                            className="col-buttons-cont-sm"
-                        )
-
-        match cont["graph"]["type"]:
-            case "bar":
-                graph = dcc.Graph(
-                    figure = px.bar(data_frame=df, x=cont["graph"]["x"], y=cont["graph"]["y"], title=cont["graph"]["title"], barmode=cont["graph"]["barmode"],
-                             color=cont["graph"]["color"]), id={'type':cont["graph"]['type'], "index":cont['index']},
-                    responsive=True,
-                    style={"height":"88%", "width":"100%"}
-                )
-                content.append(
-                    dbc.Col(
-                        html.Div(
-                            [
-                                col_buttons_graph,
-                                graph
-                            ],
-                            id={"type":"cont", "index":cont["index"]},
-                            className="graph-cont"
-                        ),
-                        id={"type":"col", "index":cont["index"]},
-                        width={"size":4, "order":cont["index"]},
-                        className="graph-col",
-                        style=selected_style
-                    )
-                )
-            case "none":
-                content.append(
-                    dbc.Col(
-                        html.Div(
-                            [
-                                col_buttons_no_graph,
-                            ],
-                            id={"type":"cont", "index":cont["index"]},
-                            className="graph-cont"
-                        ),
-                        id={"type":"col", "index":cont["index"]},
-                        width={"size":4, "order":cont["index"]},
-                        className="graph-col",
-                        style=selected_style
-                    )
-                )
-            case _:
-                print("Error de render: " + cont["id"])
-    return content
-
-#Callback para cualquier opción que requiera cargar de nuevo el editor
 @callback(
-    Output("update_editor_target", "children"),
-    Input({"type":"cont", "index":ALL}, "n_clicks"),
-    Input({"type":"remove", "index":ALL}, "n_clicks"),
-    Input({"type":"new_graph", "name":ALL, "index":ALL}, "n_clicks"),
-    State("project_title", "data"),
-    State({"type":"cont_opt", "index":ALL}, "hidden"),
-    prevent_initial_call=True
+    Output("dataInfo", "data"),
+    Input("preloadData", "id"),
+    State("data_path", "data")
 )
-def update_selected_cont(n, n2, n3, title, is_not_selected):
-    trigger_id = ctx.triggered_id
-    with open("dashboards/" + title) as json_file:
-        dash_data = json.load(json_file)
-    if trigger_id["type"]=="cont" and n[int(trigger_id["index"])-1] is not None and is_not_selected[int(trigger_id["index"])-1]:
-        #Se actualiza el contenedor seleccionado en el json
-        dash_data['selected'] = trigger_id['index']
+def load_data(pl, data_path):
+    try:
+        df = pd.DataFrame()
+        df = pandas_load_wrapper(data_path)
+    except:
+        print("error")
+    return px.data.election.to_dict("records")
 
-        with open("dashboards/" + title, "w") as outfile:
-            json.dump(dash_data, outfile) 
-        return n
-    elif n2[int(trigger_id["index"])-1] is not None and trigger_id["type"]=="remove":
-        #Se borra el contenedor seleccionado y se reordena los contenedores en el json
-        dash_data["contenedores"][:] = [
-            item for item in dash_data["contenedores"] if item.get("index") != trigger_id["index"]
-        ]
+@callback(
+    Output({"type": "graphingOptions_edit", "index": MATCH}, "children"),
+    Output({"type": "persistenceClear_edit", "index": MATCH}, "style"),
+    Output({"type": "submitEdits_edit", "index": MATCH}, "style"),
+    Input({"type": "selectChart_edit", "index": MATCH}, "value"),
+    Input("dataInfo", "data"),
+    Input({"index": MATCH, "type": "persistenceClear_edit"}, "n_clicks"),
+    State("focused-graph", "data"),
+    State("figures", "data"),
+    prevent_initial_call=True,
+)
+def graphingOptions_edit(chart, data, p, id, figs):
+    if chart:
+        if not data:
+            print("Please load a dataset")
+            return (
+                "Please load a dataset",
+                {"visibility": "hidden"},
+                {"visibility": "hidden"},
+            )
+        df = pd.DataFrame.from_dict(data)
+        try:
+            if ctx.triggered_id["type"] == "selectChart_edit":
+                return (
+                    getOpts(chart, df, id, figs),
+                    {"visibility": True},
+                    {"visibility": True},
+                )
+        except:
+            ...
+        return getOpts(chart, df), {"visibility": True}, {"visibility": True}
+    return "Please select an option", {"visibility": "hidden"}, {"visibility": "hidden"}
 
-        dash_data["contenedores"] = sorted(dash_data["contenedores"], key=lambda r: int(r["index"]), reverse=False)
+@callback(
+    Output("design-area", "children"),
+    Output("figures", "data"),
+    Output({"type": "submitEdits_edit", "index": ALL}, "children"),
+    Input({"type": "submitEdits_edit", "index": ALL}, "n_clicks"),
+    Input("deleteTarget", "n_clicks"),
+    Input("figureStore", "data"),
+    State("dataInfo", "data"),
+    State({"type": "graphingOptions_edit", "index": ALL}, "children"),
+    State({"type": "selectChart_edit", "index": ALL}, "value"),
+    State("design-area", "children"),
+    State("focused-graph", "data"),
+    State("figures", "data"),
+)
+def updateLayout(n1, d1, figs, data, opts, selectChart, children, target, figouts):
+    btn = ["Make Changes"] * len(n1)
+    if data:
+        df = pd.DataFrame.from_dict(data)
+        df = df.infer_objects()
+        if ctx.triggered_id == "figureStore":
+            children = [makeDCC_Graph(df, i) for i in figs]
+            return children, figs, btn
+        if data and opts and ctx.triggered_id != "deleteTarget":
+            if len(children) == 0:
+                figouts = []
+            trig = ctx.triggered_id.index
 
-        index = 1
-        for cont in dash_data["contenedores"]:
-            cont["index"] = str(index)
-            index+=1
+            if trig == "edit":
+                opts = opts[0]
+                figureDict = parseSelections(
+                    opts[0]["props"]["children"][1]["props"]["children"],
+                    opts[1]["props"]["children"][1]["props"]["children"],
+                )
+                figureDict["chart"] = selectChart[0]
 
-        print(dash_data["contenedores"])
-        
-        with open("dashboards/" + title, "w") as outfile:
-            json.dump(dash_data, outfile) 
-        return n2[int(trigger_id["index"])-1]
-    elif trigger_id["type"] == "new_graph" and n3[int(trigger_id["index"])] is not None:
-        target_cont = next((item for item in dash_data["contenedores"] if item["index"] == dash_data["selected"]))
+                used = []
+                for child in children:
+                    used.append(child["props"]["id"]["index"])
 
-        df = pandas_load_wrapper(dash_data["data_path"])
-        print(df)
+                y = 0
+                while y < 1000:
+                    if y not in used:
+                        break
+                    y += 1
 
-        match trigger_id["name"]:
-            case "bar":
-                target_cont["graph"] = {
-                    "type": "bar",
-                    "x": df.columns[0],
-                    "y": df.columns[0],
-                    "title": "",
-                    "barmode": "group",
-                    "color": df.columns[0]
-                }
-            case _:
-                target_cont["graph"] = {
-                    "type":"none"
-                }
-        with open("dashboards/" + title, "w") as outfile:
-            json.dump(dash_data, outfile) 
-        return n3[int(trigger_id["index"])]
-    return dash.no_update
+                figureDict["id"] = {"index": y, "type": "design-charts"}
 
-#Callback para abrir opciones
-@callback(Output("config_col", "class_name"), Input({"type":"config", "index":ALL}, "n_clicks"), State("config_col", "class_name"), prevent_initial_call=True)
-def switch_graph_config(n, classname):
-    trigger_id = ctx.triggered_id
-    if n[int(trigger_id["index"])-1] is not None:
-        if classname == "config-col-closed":
-            return "config-col-open"
-        if classname == "config-col-open":
-            return "config-col-closed"
-    return dash.no_update
+                if not "style" in figureDict:
+                    figureDict["style"] = {
+                        "position": "absolute",
+                        "width": "40%",
+                        "height": "40%",
+                    }
 
-#Options callbacks
-@callback(Output("options-slider-cont", "className"), Input("slider-button", "n_clicks"), State("options-slider-cont", "className"))
-def slide_down(n_clicks, className):
-    if className == "options-slider-cont-up":
-        return "options-slider-cont-down"
-    elif className == "options-slider-cont-down":
-        return "options-slider-cont-up"
+                children.append(makeDCC_Graph(df, figureDict))
+                figouts.append(figureDict)
+                return children, figouts, btn
+            else:
+                opts = opts[1]
+                figureDict = parseSelections(
+                    opts[0]["props"]["children"][1]["props"]["children"],
+                    opts[1]["props"]["children"][1]["props"]["children"],
+                )
+                figureDict["chart"] = selectChart[1]
+                figureDict["id"] = json.loads(target)
 
+                children = children.copy()
+
+                for c in range(len(children)):
+                    if children[c]["props"]["id"] == json.loads(target):
+                        if "figure" in children[c]["props"]:
+                            children[c]["props"]["figure"] = makeCharts(df, figureDict)[
+                                0
+                            ]
+                        else:
+                            figureDict["style"] = {
+                                "position": "absolute",
+                                "width": "40%",
+                                "height": "40%",
+                            }
+                            children[c] = makeDCC_Graph(df, figureDict)
+                figouts = figouts.copy()
+                for f in range(len(figouts)):
+                    if figouts[f]["id"] == json.loads(target):
+                        figouts[f] = figureDict
+                        figouts[f]["id"] = json.loads(target)
+
+                return children, figouts, btn
+
+        elif ctx.triggered_id == "deleteTarget":
+            for c in range(len(children)):
+                if children[c]["props"]["id"] == json.loads(target):
+                    del children[c]
+                    break
+            for fig in figouts:
+                if fig["id"] == json.loads(target):
+                    figouts.remove(fig)
+
+            return children, figouts, btn
+    raise PreventUpdate
+
+@callback(
+    Output("layoutDownload", "data"),
+    Input("exportLayout", "n_clicks"),
+    State("figureStore", "data"),
+    State("dataInfo", "data"),
+    prevent_intial_call=True,
+)
+def exportLayout(n1, figs, data):
+    if n1 > 0:
+        return dcc.send_string(json.dumps(figs), "figs.json")
+    raise PreventUpdate
