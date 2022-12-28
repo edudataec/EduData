@@ -142,14 +142,6 @@ layout = html.Div(
                                 className="me-1",
                                 color="success",
                             ),
-                            dbc.Button(
-                                id="exportLayout",
-                                children="Export Layout",
-                                n_clicks=0,
-                                className="me-1",
-                                color="info",
-                            ),
-                            dcc.Download(id="layoutDownload")
                         ],
                         style={"zIndex": "1", "position": "absolute", "width": "100%"},
                     ),
@@ -158,7 +150,27 @@ layout = html.Div(
                     dbc.Button(id="deleteTarget", style={"display": "none"}),
                 ],
                 id="design-holder",
-            ), style={"margin": "1%", "height": "98%", "width": "98%"}
+            ), style={"margin": "0%", "height": "100%", "width": "100%"}
+        ),
+        html.Div(
+            [
+                html.Div(
+                    html.Img(
+                        src="assets/imgs/arrows.png",
+                        id="slider-button"
+                    ),
+                    className="slider-button-cont"
+                ),
+                html.Div(
+                    [
+                        dbc.Button("IMPORTAR", id="imp_button"),
+                        dbc.Button("EXPORTAR", id="exp_button")
+                    ],
+                    className="slider-opt-cont"
+                ),
+            ],
+            id="options-slider-cont",
+            className="options-slider-cont-up"
         ),
         html.Div(id="save_json")
     ]
@@ -376,3 +388,11 @@ def save_json(figures, title):
             json.dump(dash_data, out_file)
         return 'Se ha grabado el dashboard', True
     raise PreventUpdate
+
+#Options callbacks
+@callback(Output("options-slider-cont", "className"), Input("slider-button", "n_clicks"), State("options-slider-cont", "className"))
+def slide_down(n_clicks, className):
+    if className == "options-slider-cont-up":
+        return "options-slider-cont-down"
+    elif className == "options-slider-cont-down":
+        return "options-slider-cont-up"

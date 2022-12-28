@@ -108,7 +108,6 @@
 }
 
 #design-area .dash-graph {
-  box-shadow: 5px 2px 15px black;
   position: absolute;
   border-radius: 10px;
   overflow: hidden;
@@ -189,14 +188,14 @@ body {
 }
 
 #design-holder {
-    width:98%;
-    height:80%;
+    width:100%;
+    height:100%;
     position:absolute;
 }
 
 #design-holder.expanded {
-    width:98%;
-    height:92%;
+    width:100%;
+    height:100%;
     position:absolute;
 }
 
@@ -227,22 +226,6 @@ body {
  z-index: 2;
 }
 
-#jyada {
-    position: absolute;
-    z-index: 9999;
-    transition: all 1s ease-out;
-    height: 120px;
-    width: 80px;
-    cursor: pointer;
-}
-
-#jyada.sleeping {
-    right: 30px;
-    top: 5px;
-    height: 50px;
-    width: 35px;
-}
-
 .highlighting {
     box-shadow: 0px 0px 15px yellow;
 }
@@ -253,6 +236,63 @@ input.highlighting {
 
 button.hightlighting {
     border: 5px yellow;
+}
+
+.options-slider-cont-up {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    left: 10px;
+    bottom: 0px;
+    width: 130px;
+    height: 160px;
+}
+
+.options-slider-cont-down{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    left: 10px;
+    bottom: 0px;
+    width: 130px;
+    height: 160px;
+    transform: translateY(120px);
+}
+
+.slider-button-cont{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color:white;
+    border-top-left-radius: 20%;
+    border-top-right-radius: 20%;
+    border-top: 1px solid black;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    border-bottom: 1px solid white;
+    transform: translateY(1.3px);
+    width:30%;
+    height:30%
+}
+
+.slider-opt-cont{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    background-color:white;
+    border-top-left-radius: 10%;
+    border-top-right-radius: 10%;
+    border: 1px solid black;
+    width:100%;
+    height:70%
+}
+
+#slider-button{
+    height: 70%;
+    width: 70%;
 }
 
 @media (min-width: 576px) { 
