@@ -116,8 +116,7 @@
 
 #design-area.edit .dash-graph {
   resize: both;
-  padding-right: 30px;
-  padding-bottom: 0.5%;
+  padding: 0;
   border: 2pt dashed black;
 }
 
@@ -171,11 +170,11 @@ body {
     box-shadow:5px 2px 10px black;
 }
 
-#design-holder #openDesignEditor,  #design-holder #saveLayout, #design-holder #deleteLayout {
+#design-holder #openDesignEditor, #design-holder #deleteLayout {
     display: none
 }
 
-#design-holder.edit #openDesignEditor, #design-holder.edit #saveLayout, #design-holder.edit #deleteLayout {
+#design-holder.edit #openDesignEditor, #design-holder.edit #deleteLayout {
     display: initial
 }
 

@@ -1,5 +1,7 @@
+import json
 from threading import Thread
-from dash import Dash, html, page_container, dcc, Output, Input, State, ALL
+from dash import Dash, html, page_container, dcc, Output, Input, State, ALL, ctx
+from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import webview
 
@@ -17,10 +19,10 @@ app.layout = html.Div(
             is_open=False,
             centered=True,
         ),
-        dcc.Store(id="dataInfo", data=[], storage_type="local"),
-        dcc.Store(id="figureStore", data=[], storage_type="local"),
-        dcc.Store(id="focused-graph", storage_type="local"),
-        dcc.Store(id="figures", storage_type="local", data=[]),
+        dcc.Store(id="dataInfo", data=[], storage_type="session"),
+        dcc.Store(id="figureStore", data=[], storage_type="session"),
+        dcc.Store(id="focused-graph", storage_type="session"),
+        dcc.Store(id="figures", storage_type="session", data=[]),
         html.Div(id="persistenceClear"),
         page_container
     ]
@@ -33,7 +35,7 @@ app.clientside_callback(
                 $('#design-area .dash-graph').unbind()
                 $('#design-area .dash-graph > div:first-of-type').empty()
                 $('#design-area .dash-graph').on('mouseenter', function () {
-                    localStorage.setItem('focused-graph',$(this)[0].id)
+                    sessionStorage.setItem('focused-graph',$(this)[0].id)
                     $('#design-area .dash-graph').removeClass('focused-graph')
                     $(this).addClass('focused-graph')
                 })
@@ -53,80 +55,15 @@ app.clientside_callback(
     """,
     Output("design-area", "className"),
     Input("toggleEdit", "n_clicks"),
-    State("design-area", "className"),
-    prevent_intial_call=True,
-)
-
-app.clientside_callback(
-    """function () {
-        const keys = Object.keys(localStorage)
-        const triggered = dash_clientside.callback_context.triggered.map(t => t.prop_id);
-        if (typeof oldTrig !== 'undefined') {
-            if (oldTrig == triggered) {
-                return ''
-            }
-        }
-        oldTrig = triggered
-        for (let key of keys) {
-            if (String(key).includes('_dash_persistence') && !String(key).includes('template')) {
-                localStorage.removeItem(key)
-            }
-        }
-        return ''
-    }""",
-    Output("persistenceClear", "children"),
-    Input("preloadData", "value"),
-    Input({"index": ALL, "type": "persistenceClear"}, "n_clicks"),
-)
-
-app.clientside_callback(
-    """function dragging(d) {
-        setTimeout(function () {
-        $('#design-area .dash-graph').unbind()
-        $('#design-area .dash-graph').on('mouseenter', function () {
-            localStorage.setItem('focused-graph',$(this)[0].id)
-            $('#design-area .dash-graph').removeClass('focused-graph')
-            $(this).addClass('focused-graph')
-        })
-        $('#design-area .dash-graph > div:first-of-type').empty()
-        $('#design-area.edit .dash-graph').each(function() {
-            addEditButtons($(this).find('div')[0])
-            dragElement($(this).find('.fa-up-down-left-right')[0])
-        })}, 300)
-        
-        return window.dash_clientside.no_update
-    }""",
-    Output("design-area", "id"),
-    Input("design-area", "children"),
+    State("design-area", "className")
 )
 
 app.clientside_callback(
     """
-        function (n1) {
-            if (n1 > 0) {
-                return localStorage.getItem('focused-graph')
-            }
-            return ''
-        }
-    """,
-    Output("focused-graph", "data"),
-    Input("syncStore", "n_clicks"),
-    prevent_initial_call=True,
-)
-
-app.clientside_callback(
-    """
-    function saveLayout(n1, n2) {
+    async function saveLayout(n1) {
         const triggered = dash_clientside.callback_context.triggered.map(t => t.prop_id);
-        if (triggered == 'deleteLayout.n_clicks') {
-            if (confirm('You would like to delete your layout?')) {
-                return [[], '', false]
-            } else {
-                return window.dash_clientside.no_update
-            }
-        }
         if (n1 > 0) {
-            figures = JSON.parse(localStorage.getItem('figures'))
+            figures = JSON.parse(sessionStorage.getItem('figures'))
             figureData = []
             children = $("#design-area").children()
             ref = $("#design-area")[0].getBoundingClientRect()
@@ -153,17 +90,72 @@ app.clientside_callback(
                 }
                 figureData.push(figures[y])
             }
-            return [figureData, 'Saved Successfully', true]
+            return [figureData, window.dash_clientside.no_update]
         }
-        return [JSON.parse(localStorage.getItem('figureStore')), '', false]
+        console.log('load json')
+        return [window.dash_clientside.no_update, 1]
     }
     """,
     Output("figureStore", "data"),
-    Output("alert", "children"),
-    Output("statusAlert", "is_open"),
+    Output("load_json", "children"),
     Input("saveLayout", "n_clicks"),
-    Input("deleteLayout", "n_clicks"),
-    prevent_inital_call=True,
+)
+
+app.clientside_callback(
+    """function () {
+        const keys = Object.keys(sessionStorage)
+        const triggered = dash_clientside.callback_context.triggered.map(t => t.prop_id);
+        if (typeof oldTrig !== 'undefined') {
+            if (oldTrig == triggered) {
+                return ''
+            }
+        }
+        oldTrig = triggered
+        for (let key of keys) {
+            if (String(key).includes('_dash_persistence') && !String(key).includes('template')) {
+                sessionStorage.removeItem(key)
+            }
+        }
+        return ''
+    }""",
+    Output("persistenceClear", "children"),
+    Input("preloadData", "value"),
+    Input({"index": ALL, "type": "persistenceClear"}, "n_clicks"),
+)
+
+app.clientside_callback(
+    """function dragging(d) {
+        setTimeout(function () {
+        $('#design-area .dash-graph').unbind()
+        $('#design-area .dash-graph').on('mouseenter', function () {
+            sessionStorage.setItem('focused-graph',$(this)[0].id)
+            $('#design-area .dash-graph').removeClass('focused-graph')
+            $(this).addClass('focused-graph')
+        })
+        $('#design-area .dash-graph > div:first-of-type').empty()
+        $('#design-area.edit .dash-graph').each(function() {
+            addEditButtons($(this).find('div')[0])
+            dragElement($(this).find('.fa-up-down-left-right')[0])
+        })}, 300)
+        
+        return window.dash_clientside.no_update
+    }""",
+    Output("design-area", "id"),
+    Input("design-area", "children"),
+)
+
+app.clientside_callback(
+    """
+        function (n1) {
+            if (n1 > 0) {
+                return sessionStorage.getItem('focused-graph')
+            }
+            return ''
+        }
+    """,
+    Output("focused-graph", "data"),
+    Input("syncStore", "n_clicks"),
+    prevent_initial_call=True,
 )
 
 def run_app():

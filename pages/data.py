@@ -136,6 +136,21 @@ def load_data(ts, datapath):
         columns = [{'name': i, 'id': i, 'deletable': True} for i in sorted(df.columns)]
         return columns, columns, df.to_dict('records')
 
+@callback(
+    Output("dataInfo", "data"),
+    Input("data_path", "modified_timestamp"), 
+    State("data_path", "data"),
+    prevent_initial_call = True
+)
+def load_data(ts, data_path):
+    if ts is not None:
+        try:
+            df = pd.DataFrame()
+            df = pandas_load_wrapper(data_path)
+        except:
+            print("error")
+        return df.to_dict("records")
+
 @callback(Output('table', 'data'), 
 Input('table', 'page_current'), Input('table', 'page_size'), Input('table', 'sort_by'), Input('full_data_table', 'data'))
 def update_data(page_current, page_size, sort_by, data):

@@ -42,6 +42,7 @@ layout = html.Div(
             dark=True,
             links_left=True
         ),
+        html.Div(id="load_json", hidden=True),
         html.Div(
             html.Div(
                 [
@@ -148,14 +149,7 @@ layout = html.Div(
                                 className="me-1",
                                 color="info",
                             ),
-                            dcc.Download(id="layoutDownload"),
-                            dbc.Button(
-                                id="deleteLayout",
-                                children="Delete Layout",
-                                n_clicks=0,
-                                className="me-1",
-                                color="danger",
-                            )
+                            dcc.Download(id="layoutDownload")
                         ],
                         style={"zIndex": "1", "position": "absolute", "width": "100%"},
                     ),
@@ -166,7 +160,7 @@ layout = html.Div(
                 id="design-holder",
             ), style={"margin": "1%", "height": "98%", "width": "98%"}
         ),
-        html.Div(id='preloadData')
+        html.Div(id="save_json")
     ]
 )
 
@@ -211,19 +205,6 @@ def openEditor_edit(n1, isOpen, id, figs):
     return isOpen
 
 @callback(
-    Output("dataInfo", "data"),
-    Input("preloadData", "id"),
-    State("data_path", "data")
-)
-def load_data(pl, data_path):
-    try:
-        df = pd.DataFrame()
-        df = pandas_load_wrapper(data_path)
-    except:
-        print("error")
-    return px.data.election.to_dict("records")
-
-@callback(
     Output({"type": "graphingOptions_edit", "index": MATCH}, "children"),
     Output({"type": "persistenceClear_edit", "index": MATCH}, "style"),
     Output({"type": "submitEdits_edit", "index": MATCH}, "style"),
@@ -263,18 +244,25 @@ def graphingOptions_edit(chart, data, p, id, figs):
     Input({"type": "submitEdits_edit", "index": ALL}, "n_clicks"),
     Input("deleteTarget", "n_clicks"),
     Input("figureStore", "data"),
+    Input("load_json", "children"),
     State("dataInfo", "data"),
     State({"type": "graphingOptions_edit", "index": ALL}, "children"),
     State({"type": "selectChart_edit", "index": ALL}, "value"),
     State("design-area", "children"),
     State("focused-graph", "data"),
     State("figures", "data"),
+    State("project_title", "data")
 )
-def updateLayout(n1, d1, figs, data, opts, selectChart, children, target, figouts):
+def updateLayout(n1, d1, figs, load, data, opts, selectChart, children, target, figouts, title):
     btn = ["Make Changes"] * len(n1)
     if data:
         df = pd.DataFrame.from_dict(data)
         df = df.infer_objects()
+        if ctx.triggered_id == "load_json":
+            with open("dashboards/" + title) as json_file:
+                dash_data = json.load(json_file)
+            children = [makeDCC_Graph(df, i) for i in dash_data['contenedores']]
+            return children, dash_data['contenedores'], btn
         if ctx.triggered_id == "figureStore":
             children = [makeDCC_Graph(df, i) for i in figs]
             return children, figs, btn
@@ -357,14 +345,34 @@ def updateLayout(n1, d1, figs, data, opts, selectChart, children, target, figout
             return children, figouts, btn
     raise PreventUpdate
 
-@callback(
-    Output("layoutDownload", "data"),
-    Input("exportLayout", "n_clicks"),
-    State("figureStore", "data"),
-    State("dataInfo", "data"),
-    prevent_intial_call=True,
+'''@callback(
+    Output("figureStore", "data"),
+    Input("load_json", "n_clicks"),
+    State("project_title", "data"),
 )
-def exportLayout(n1, figs, data):
-    if n1 > 0:
-        return dcc.send_string(json.dumps(figs), "figs.json")
+def load_json(n1,title):
+    triggered = ctx.triggered_id
+    if triggered == "load_json":
+        with open("dashboards/"+title) as json_file:
+            dash_data = json.load(json_file)
+
+        return dash_data["contenedores"]'''
+
+@callback(
+    Output("alert", "children"),
+    Output("statusAlert", "is_open"),
+    Input("figureStore", "data"),
+    State("project_title", "data"),
+)
+def save_json(figures, title):
+    print(figures)
+    if figures is not None:
+        with open("dashboards/" + title) as json_file:
+            dash_data = json.load(json_file)
+    
+        dash_data["contenedores"] = figures
+
+        with open("dashboards/" + title, "w") as out_file:
+            json.dump(dash_data, out_file)
+        return 'Se ha grabado el dashboard', True
     raise PreventUpdate
