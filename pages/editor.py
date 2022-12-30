@@ -221,7 +221,7 @@ def openEditor_edit(n1, isOpen, id, figs):
     Output({"type": "persistenceClear_edit", "index": MATCH}, "style"),
     Output({"type": "submitEdits_edit", "index": MATCH}, "style"),
     Input({"type": "selectChart_edit", "index": MATCH}, "value"),
-    Input("dataInfo", "data"),
+    State("dataInfo", "data"),
     Input({"index": MATCH, "type": "persistenceClear_edit"}, "n_clicks"),
     State("focused-graph", "data"),
     State("figures", "data"),
