@@ -7,6 +7,7 @@ from .utils.util import pandas_load_wrapper
 import dash_bootstrap_components as dbc
 import pandas as pd
 import tkinter as tk
+import plotly.graph_objects as go
 from tkinter import filedialog
 
 
@@ -38,48 +39,44 @@ layout = html.Div(
             dark=True,
             links_left=True
         ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        html.H3("No hay datos cargados actualmente...", id="no_data_header", style={"text-align":"center"}),
-                        html.H2(id="nombre_archivo", className="mt-3", style={"display":"none"}),
-                        html.Div(dash_table.DataTable(id="full_data_table"), style={"display":"none"}),
-                        dbc.Row(
-                            dbc.Col(
-                                [
-                                    dash_table.DataTable(id="table", 
-                                    page_current=0, page_size=20, page_action='custom',
-                                    sort_action='custom', sort_mode='multi', sort_by=[])
-                                ],
-                                id="table_cont",
-                                class_name="mt-3",
-                                width="auto"
+        dbc.Container(
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            html.H3("No hay datos cargados actualmente...", id="no_data_header", style={"text-align":"center"}),
+                            html.H2(id="nombre_archivo", className="mt-3", style={"display":"none"}),
+                            dbc.Row(
+                                dbc.Col(
+                                    id="table_cont",
+                                    class_name="mt-3",
+                                    width="auto"
+                                ),
+                                id="table_display",
+                                justify="end"
                             ),
-                            id="table_display",
-                            justify="end",
-                            style={"display":"none"}
-                        ),
-                        dbc.Row(
-                            dbc.Col(
-                                [
-                                    html.Div(dbc.Button("CARGAR", color="primary", className="me-1 mt-3 mb-3", id="cargar"), id="cargar_cont"),
-                                    html.Div(id="button_func_enabler", style={"display":"none"}),
-                                    html.Div(id="cargar_target")
-                                ],
-                                width="auto"
+                            dbc.Row(
+                                dbc.Col(
+                                    [
+                                        html.Div(dbc.Button("CARGAR", color="primary", className="me-1 mt-3 mb-3", id="cargar"), id="cargar_cont"),
+                                        html.Div(id="button_func_enabler", style={"display":"none"}),
+                                        html.Div(id="cargar_target")
+                                    ],
+                                    width="auto"
+                                ),
+                                justify="center"
                             ),
-                            justify="center"
-                        ),
-                    ],
-                    align="center",
-                    width="auto"
-                )
-            ],
-            id="data_page",
-            align="center",
-            justify="center",
-            style={"background-color":"lightgrey", "height":"95vh"}
+                        ],
+                        align="center",
+                        width="auto"
+                    )
+                ],
+                id="data_page",
+                align="center",
+                justify="center"
+            ),
+            fluid=True,
+            style={"background-color":"lightgrey", "height":"95vh", "margin":"0"}
         )
     ]
 )
@@ -125,7 +122,7 @@ def update_title(ts, data):
         return "Archivo cargado: " + os.path.basename(data)
 
 #Callbacks de tabla
-@callback(Output("table", "columns"), Output("full_data_table", "columns"), Output('full_data_table', 'data'),Input("data_path", "modified_timestamp"), State("data_path", "data"))
+@callback(Output("table_cont", "children"), Input("data_path", "modified_timestamp"), State("data_path", "data"))
 def load_data(ts, datapath):
     if ts is not None:
         try:
@@ -133,8 +130,27 @@ def load_data(ts, datapath):
             df = pandas_load_wrapper(datapath)
         except:
             print("error")
-        columns = [{'name': i, 'id': i, 'deletable': True} for i in sorted(df.columns)]
-        return columns, columns, df.to_dict('records')
+
+        values=[]
+        for column in df.columns:
+            li = df[column].tolist()
+            values.append(li)
+
+        tabl = go.Figure(
+            data=go.Table(
+                header=dict(values=list(df.columns),
+                            fill_color='paleturquoise',
+                            align='left'),
+                cells=dict(values=values,
+                            fill_color='lavender',
+                            align='left')
+            ),
+            layout={
+                'paper_bgcolor': 'lightgrey',
+            }
+        )
+        return dcc.Graph(figure=tabl,id="table")
+    return dash.no_update
 
 @callback(
     Output("dataInfo", "data"),
@@ -150,24 +166,3 @@ def load_data(ts, data_path):
         except:
             print("error")
         return df.to_dict("records")
-
-@callback(Output('table', 'data'), 
-Input('table', 'page_current'), Input('table', 'page_size'), Input('table', 'sort_by'), Input('full_data_table', 'data'))
-def update_data(page_current, page_size, sort_by, data):
-    print(sort_by)
-    try:
-        df = pd.DataFrame.from_records(data)
-        if len(sort_by):
-            dff = df.sort_values(
-                [col['column_id'] for col in sort_by],
-                ascending=[
-                    col['direction'] == 'asc'
-                    for col in sort_by
-                ],
-                inplace=False
-            )
-        else:
-            dff=df
-        return dff.iloc[page_current*page_size:(page_current + 1)*page_size].to_dict('records')
-    except:
-        return {}
