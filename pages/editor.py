@@ -1,6 +1,7 @@
 import json
 import dash
 from dash import Dash, dcc, Output, Input, html, page_container, callback, State, MATCH, ctx, ALL, clientside_callback
+from pages.utils.export import export_from_json
 from .utils.util import pandas_load_wrapper
 from .utils.makeCharts import makeCharts, getOpts, parseSelections, makeDCC_Graph
 from inspect import getmembers, isfunction
@@ -373,12 +374,17 @@ def load_json(n1,title):
 @callback(
     Output("alert", "children"),
     Output("statusAlert", "is_open"),
+    Input("exp_button", "n_clicks"),
     Input("figureStore", "data"),
     State("project_title", "data"),
 )
-def save_json(figures, title):
+def save_json(n, figures, title):
     print(figures)
-    if figures is not None:
+    if ctx.triggered_id == "exp_button":
+        if n>0:
+            export_from_json(title)
+            return 'Se exportó el dashboard en la carpeta de descargas', True
+    elif figures is not None:
         with open("dashboards/" + title) as json_file:
             dash_data = json.load(json_file)
     
