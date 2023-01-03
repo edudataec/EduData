@@ -239,7 +239,7 @@ def getOpts(selectChart, data={}, id=None, figs=None):
     return [
         dmc.AccordionItem(
             [
-                dmc.AccordionControl("Chart Options"),
+                dmc.AccordionControl("Opciones de Gráfico"),
                 dmc.AccordionPanel(
                     html.Div(
                         layout,
@@ -252,27 +252,21 @@ def getOpts(selectChart, data={}, id=None, figs=None):
         ),
         dmc.AccordionItem(
             [
-                dmc.AccordionControl("Chart Info"),
+                dmc.AccordionControl("Info de Gráfico"),
                 dmc.AccordionPanel(
                     [
                         dcc.Link(
-                            "API Reference",
+                            "API de Plotly",
                             href=f"https://plotly.com/python-api-reference/generated/plotly."
                             f'express.{selectChart.replace("px.", "")}.html#plotly.express.{selectChart.replace("px.", "")}',
                             target="_blank",
                         ),
                         html.Br(),
                         dcc.Link(
-                            "Plotly Example Docs",
+                            "Ejemplos de Plotly",
                             href="https://plotly.com/python/",
                             target="_blank",
-                        ),
-                        html.Br(),
-                        dcc.Link(
-                            "Layout References",
-                            href="https://plotly.com/python-api-reference/generated/plotly.graph_objects.Layout.html",
-                            target="_blank",
-                        ),
+                        )
                     ]
                 ),
             ],

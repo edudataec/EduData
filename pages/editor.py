@@ -60,14 +60,14 @@ layout = html.Div(
                     dcc.Graph(id={'index':'edit', 'type':"testFigure"}, style={"display": "none"}),
                     dbc.Offcanvas(
                         [
-                            "Select the chart type and options below",
+                            "Seleccione el tipo de gráfico y sus configuraciones",
                             dcc.Dropdown(
                                 id={"index": "edit", "type": "selectChart_edit"},
                                 options=chartOpts,
                             ),
                             dbc.Button(
                                 id={"index": "edit", "type": "persistenceClear_edit"},
-                                children="Clear All Values",
+                                children="Limpiar Valores",
                                 className="m-3",
                                 color="info",
                                 style={"visibility": "hidden"},
@@ -78,7 +78,7 @@ layout = html.Div(
                             dcc.Loading(
                                 [
                                     dbc.Button(
-                                        "Make Changes",
+                                        "Realizar Cambios",
                                         id={"index": "edit", "type": "submitEdits_edit"},
                                         className="m-3",
                                         style={"visibility": "hidden"},
@@ -92,13 +92,13 @@ layout = html.Div(
                     ),
                     dbc.Offcanvas(
                         [
-                            "Select the chart type and options below",
+                            "Seleccione el tipo de gráfico y sus configuraciones",
                             dcc.Dropdown(
                                 id={"index": "2", "type": "selectChart_edit"}, options=chartOpts
                             ),
                             dbc.Button(
                                 id={"index": "2", "type": "persistenceClear_edit"},
-                                children="Clear All Values",
+                                children="Limpiar Valores",
                                 className="m-3",
                                 color="info",
                                 style={"visibility": "hidden"},
@@ -109,7 +109,7 @@ layout = html.Div(
                             dcc.Loading(
                                 [
                                     dbc.Button(
-                                        "Make Changes",
+                                        "Realizar Cambios",
                                         id={"index": "2", "type": "submitEdits_edit"},
                                         className="m-3",
                                         style={"visibility": "hidden"},
@@ -124,7 +124,7 @@ layout = html.Div(
                     html.Div(
                         [
                             dbc.Button(
-                                "Toggle Edit Mode",
+                                "Abrir Modo Editor",
                                 id="toggleEdit",
                                 color="warning",
                                 className="me-1",
@@ -132,13 +132,13 @@ layout = html.Div(
                             ),
                             dbc.Button(
                                 id="openDesignEditor",
-                                children="Add Chart",
+                                children="Añadir Gráfico",
                                 n_clicks=0,
                                 className="me-1",
                             ),
                             dbc.Button(
                                 id="saveLayout",
-                                children="Save Layout",
+                                children="Guardar",
                                 n_clicks=0,
                                 className="me-1",
                                 color="success",
@@ -267,7 +267,7 @@ def graphingOptions_edit(chart, data, p, id, figs):
     State("project_title", "data")
 )
 def updateLayout(n1, d1, figs, load, data, opts, selectChart, children, target, figouts, title):
-    btn = ["Make Changes"] * len(n1)
+    btn = ["Realizar Cambios"] * len(n1)
     if data:
         df = pd.DataFrame.from_dict(data)
         df = df.infer_objects()
