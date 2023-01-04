@@ -12,7 +12,39 @@ import plotly.express as px
 import pandas as pd
 
 px_list = getmembers(px, isfunction)
-chartOpts = ["px." + i for i, y in px_list]  # +['go.'+i for i, y in go_list]
+chartOpts = [
+    {"label":"Gráfico de área", "value":"px.area"},
+    {"label":"Gráfico de barras", "value":"px.bar"},
+    {"label":"Gráfico de barras polar", "value":"px.bar_polar"},
+    {"label":"Gráfico de cajas", "value":"px.box"},
+    {"label":"Gráfico cloroplético", "value":"px.choropleth"},
+    {"label":"Mapa cloroplético", "value":"px.choropleth_mapbox"},
+    {"label":"Gráfico de densidad de contorno", "value":"px.density_contour"},
+    {"label":"Mapa de calor", "value":"px.density_heatmap"},
+    {"label":"Gráfico ECDF", "value":"px.ecdf"},
+    {"label":"Gráfico de embudo", "value":"px.funnel"},
+    {"label":"Gráfico de area de embudo", "value":"px.funnel_area"},
+    {"label":"Histograma", "value":"px.histogram"},
+    {"label":"Gráfico de estalactita", "value":"px.icicle"},
+    {"label":"Gráfico de líneas", "value":"px.line"},
+    {"label":"Gráfico de líneas 3d", "value":"px.line_3d"},
+    {"label":"Gráfico de líneas geográfico", "value":"px.line_geo"},
+    {"label":"Gráfico de líneas polar", "value":"px.line_polar"},
+    {"label":"Gráfico de categorías paralelas", "value":"px.parallel_categories"},
+    {"label":"Pie chart", "value":"px.pie"},
+    {"label":"Gráfico de dispersión", "value":"px.scatter"},
+    {"label":"Gráfico de dispersión 3d", "value":"px.scatter_3d"},
+    {"label":"Gráfico de dispersión geográfico", "value":"px.scatter_geo"},
+    {"label":"Gráfico de dispersión polar", "value":"px.scatter_polar"},
+    {"label":"Gráfico de matriz de dispersión", "value":"px.scatter_matrix"},
+    {"label":"Diagrama ternario de dispersión", "value":"px.scatter_ternary"},
+    {"label":"Gráfico de tiras", "value":"px.strip"},
+    {"label":"Gráfico de rayos de sol", "value":"px.sunburst"},
+    {"label":"Gráfico de línea de tiempo", "value":"px.timeline"},
+    {"label":"Diagrama de árbol", "value":"px.treemap"},
+    {"label":"Gráfico de violín", "value":"px.violin"},
+]
+
 offCanvStyle = {"borderRadius": "15px"}
 
 dash.register_page(__name__, name='editor')
@@ -61,9 +93,19 @@ layout = html.Div(
                     dbc.Offcanvas(
                         [
                             "Seleccione el tipo de gráfico y sus configuraciones",
-                            dcc.Dropdown(
-                                id={"index": "edit", "type": "selectChart_edit"},
-                                options=chartOpts,
+                            html.Div(
+                                [
+                                    dcc.Dropdown(
+                                        id={"index": "edit", "type": "selectChart_edit"},
+                                        options=chartOpts,
+                                        style={"width": "85%"}
+                                    ),
+                                    html.Img(
+                                        id={"index": "edit", "type": "chartPreview_edit"},
+                                        style={"width": "15%"}
+                                    ),
+                                ],
+                                style={"display":"flex", "justify-content": "space-around", "align-items": "center"}
                             ),
                             dbc.Button(
                                 id={"index": "edit", "type": "persistenceClear_edit"},
@@ -93,8 +135,18 @@ layout = html.Div(
                     dbc.Offcanvas(
                         [
                             "Seleccione el tipo de gráfico y sus configuraciones",
-                            dcc.Dropdown(
-                                id={"index": "2", "type": "selectChart_edit"}, options=chartOpts
+                            html.Div(
+                                [
+                                    dcc.Dropdown(
+                                        id={"index": "2", "type": "selectChart_edit"}, options=chartOpts,
+                                        style={"width": "85%"}
+                                    ),
+                                    html.Img(
+                                        id={"index": "2", "type": "chartPreview_edit"},
+                                        style={"width": "15%"}
+                                    ),
+                                ],
+                                style={"display":"flex", "justify-content": "space-around", "align-items": "center"}
                             ),
                             dbc.Button(
                                 id={"index": "2", "type": "persistenceClear_edit"},
@@ -221,6 +273,7 @@ def openEditor_edit(n1, isOpen, id, figs):
     Output({"type": "graphingOptions_edit", "index": MATCH}, "children"),
     Output({"type": "persistenceClear_edit", "index": MATCH}, "style"),
     Output({"type": "submitEdits_edit", "index": MATCH}, "style"),
+    Output({"type":"chartPreview_edit", "index": MATCH}, "src"),
     Input({"type": "selectChart_edit", "index": MATCH}, "value"),
     State("dataInfo", "data"),
     Input({"index": MATCH, "type": "persistenceClear_edit"}, "n_clicks"),
@@ -236,6 +289,7 @@ def graphingOptions_edit(chart, data, p, id, figs):
                 "Please load a dataset",
                 {"visibility": "hidden"},
                 {"visibility": "hidden"},
+                ""
             )
         df = pd.DataFrame.from_dict(data)
         try:
@@ -244,11 +298,12 @@ def graphingOptions_edit(chart, data, p, id, figs):
                     getOpts(chart, df, id, figs),
                     {"visibility": True},
                     {"visibility": True},
+                    "assets/imgs/" + chart + ".png"
                 )
         except:
             ...
-        return getOpts(chart, df), {"visibility": True}, {"visibility": True}
-    return "Please select an option", {"visibility": "hidden"}, {"visibility": "hidden"}
+        return getOpts(chart, df), {"visibility": True}, {"visibility": True}, "assets/imgs/" + chart + ".png"
+    return "Please select an option", {"visibility": "hidden"}, {"visibility": "hidden"}, ""
 
 @callback(
     Output("design-area", "children"),
