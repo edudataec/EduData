@@ -295,6 +295,20 @@ button.hightlighting {
     width: 70%;
 }
 
+.hide{
+    position: fixed;
+    font-size: 15pt;
+    border-radius: 30px;
+    padding: 10px;
+    box-shadow: 2px 2px 5px black;
+    right: 10px;
+    bottom: 10px;
+}
+
+.hide:hover{
+    opacity: 50%;
+}
+
 @media (min-width: 576px) { 
     .card-title{
         font-size: 12px;

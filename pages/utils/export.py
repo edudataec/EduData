@@ -1,9 +1,11 @@
+import codecs
 import json
 from string import Template
 import os
 
 
 script_body_temp = '''
+# -*- coding: utf-8 -*-
 import json
 from dash import Dash,html,Input,Output,dcc
 import dash
@@ -80,7 +82,7 @@ def export_from_json(title):
         graphs.append(fig)
 
     script_body = Template(script_body_temp).substitute(graphs=",\n\t\t".join(graphs), data_path=dash_data["data_path"])
-    with open(str(get_download_path()) + "\\" + title.split(".")[0] + "_result.py", "w") as outfile:
+    with codecs.open(str(get_download_path()) + "\\" + title.split(".")[0] + "_result.py", "w", "utf-8") as outfile:
         outfile.write(script_body)
 
 def get_download_path():

@@ -32,8 +32,7 @@ layout = html.Div(
                     ) 
                 ),
                 dbc.NavItem(dbc.NavLink("Editor", href="/editor")),
-                dbc.NavItem(dbc.NavLink("Data", href="/data", active=True)),
-                dbc.NavItem(dbc.NavLink("Visualizar", href="/visualizar"))
+                dbc.NavItem(dbc.NavLink("Data", href="/data", active=True))
             ],
             color="primary",
             dark=True,

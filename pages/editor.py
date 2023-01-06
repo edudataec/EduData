@@ -68,8 +68,7 @@ layout = html.Div(
                     ) 
                 ),
                 dbc.NavItem(dbc.NavLink("Editor", href="/editor", active=True)),
-                dbc.NavItem(dbc.NavLink("Data", href="/data")),
-                dbc.NavItem(dbc.NavLink("Visualizar", href="/visualizar"))
+                dbc.NavItem(dbc.NavLink("Data", href="/data"))
             ],
             color="primary",
             dark=True,
@@ -196,6 +195,7 @@ layout = html.Div(
                                 color="success",
                             ),
                         ],
+                        id="edit_buttons_holder",
                         style={"zIndex": "1", "position": "absolute", "width": "100%"},
                     ),
                     dbc.Button(id="editActive", style={"display": "none"}),
@@ -224,6 +224,11 @@ layout = html.Div(
             ],
             id="options-slider-cont",
             className="options-slider-cont-up"
+        ),
+        html.Div(
+            id="hideLayout",
+            n_clicks=0,
+            className="hide btn-light fa-solid fa-eye",
         ),
         html.Div(id="save_json")
     ]
@@ -457,3 +462,11 @@ def slide_down(n_clicks, className):
         return "options-slider-cont-down"
     elif className == "options-slider-cont-down":
         return "options-slider-cont-up"
+
+@callback(Output("edit_buttons_holder", "style"), Output("options-slider-cont", "style"), Output("hideLayout", "className"), Input("hideLayout", "n_clicks"), State("hideLayout", "className"))
+def hide_buttons(n, classN):
+    if n>0 :
+        if classN == "hide btn-light fa-solid fa-eye":
+            return {"display":"none"}, {"display":"none"}, "hide btn-light fa-solid fa-eye-slash"
+        else:
+            return {"zIndex": "1", "position": "absolute", "width": "100%"}, {}, "hide btn-light fa-solid fa-eye"
