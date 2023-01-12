@@ -4,7 +4,8 @@ import datetime
 from dash import Dash, dcc, Output, Input, html, page_container, callback, ctx, State, ALL
 import dash_bootstrap_components as dbc
 import tkinter as tk
-from tkinter import filedialog
+from tkinter.filedialog import askopenfilename
+from dash.exceptions import PreventUpdate
 
 dash.register_page(__name__, path='/', name='home')
 
@@ -364,7 +365,7 @@ def buscar_proyecto(enable):
         root = tk.Tk()
         root.withdraw()
         root.wm_attributes('-topmost', 1)
-        file_path = filedialog.askopenfilename(parent=root)
+        file_path = askopenfilename(parent=root)
         print(file_path)
         root.destroy()
         if file_path!="":

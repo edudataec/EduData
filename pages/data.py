@@ -4,11 +4,12 @@ import re
 import json
 from dash import Dash, dcc, Output, Input, State, html, page_container, callback, dash_table, ctx
 from .utils.util import pandas_load_wrapper
+from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import pandas as pd
 import tkinter as tk
 import plotly.graph_objects as go
-from tkinter import filedialog
+from tkinter.filedialog import askopenfilename
 
 
 dash.register_page(__name__, name='data')
@@ -99,7 +100,7 @@ def cargar_data(enable, x, title):
         root = tk.Tk()
         root.withdraw()
         root.wm_attributes('-topmost', 1)
-        file_path = filedialog.askopenfilename(parent=root)
+        file_path = askopenfilename(parent=root)
         root.destroy()
         if file_path!="":
             dash_data["data_path"] = file_path
@@ -111,7 +112,7 @@ def cargar_data(enable, x, title):
     elif (dash_data["data_path"] != "") :
         file_path = dash_data["data_path"]
         return file_path, button, None, None, {"display":"none"}, {"background-color":"lightgrey", "height":"auto"}
-    return file_path, button, {"display":"none"}, {"display":"none"}, None, {"background-color":"lightgrey", "height":"95vh"}
+    return dash.no_update, button, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
 @callback(Output("nombre_archivo", "children"), Input("data_path", "modified_timestamp"), State("data_path", "data"))
 def update_title(ts, data):

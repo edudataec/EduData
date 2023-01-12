@@ -300,14 +300,14 @@ def graphingOptions_edit(chart, data, p, id, figs):
         try:
             if ctx.triggered_id["type"] == "selectChart_edit":
                 return (
-                    getOpts(chart, df, id, figs),
+                    getOpts(chart, id, figs, df),
                     {"visibility": True},
                     {"visibility": True},
                     "assets/imgs/" + chart + ".png"
                 )
         except:
             ...
-        return getOpts(chart, df), {"visibility": True}, {"visibility": True}, "assets/imgs/" + chart + ".png"
+        return getOpts(chart, None, "bruh", df), {"visibility": True}, {"visibility": True}, "assets/imgs/" + chart + ".png"
     return "Please select an option", {"visibility": "hidden"}, {"visibility": "hidden"}, ""
 
 @callback(

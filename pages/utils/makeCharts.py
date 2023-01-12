@@ -160,19 +160,15 @@ def parseSelections(opts, layout):
     return {"figure": info}
 
 
-def getOpts(selectChart, data={}, id=None, figs=None):
+def getOpts(selectChart, id, figs, data={}):
     layout = []
     sig = signature(findFunc(selectChart))
     cols, multiCols= getColumns(selectChart)
+    figureData = {}
     if id:
         for f in figs:
-            if f["id"] == json.loads(id):
+            if str(f["id"]).replace("'",'"').replace(" ","") == id:
                 figureData = f["figure"]
-                layData = f["layout"]
-    else:
-        figureData = {}
-        layData = {}
-
     for param in sig.parameters.values():
         layout.append(html.Div(str(param).split("=")[0] + ":", className="dbc"))
         if "data_frame" in str(param):
@@ -199,7 +195,6 @@ def getOpts(selectChart, data={}, id=None, figs=None):
                             id=str(param).split("=")[0],
                             value=val,
                             placeholder=str(param).split("=")[0],
-                            persistence_type="memory",
                             options=data.columns,
                             multi=True,
                         )
@@ -210,7 +205,6 @@ def getOpts(selectChart, data={}, id=None, figs=None):
                             id=str(param).split("=")[0],
                             value=val,
                             placeholder=str(param).split("=")[0],
-                            persistence="memory",
                             options=data.columns,
                         )
                     )
@@ -220,7 +214,6 @@ def getOpts(selectChart, data={}, id=None, figs=None):
                         id=str(param).split("=")[0],
                         value=val,
                         placeholder=str(param).split("=")[0],
-                        persistence="memory",
                         options=[t for t in templates],
                     )
                 )
@@ -233,7 +226,6 @@ def getOpts(selectChart, data={}, id=None, figs=None):
                         id=str(param).split("=")[0],
                         value=val,
                         placeholder=str(param).split("=")[0],
-                        persistence="memory",
                     )
                 )
     return [
