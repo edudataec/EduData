@@ -19,6 +19,12 @@ app.layout = html.Div(
             is_open=False,
             centered=True,
         ),
+        dbc.Modal(
+            id="statusAlertData",
+            children=[html.Div(id="alertData", className="alert-success")],
+            is_open=False,
+            centered=True,
+        ),
         dcc.Store(id="dataInfo", data=[], storage_type="session"),
         dcc.Store(id="figureStore", data=[], storage_type="session"),
         dcc.Store(id="focused-graph", storage_type="session"),
@@ -41,19 +47,20 @@ app.clientside_callback(
                 })
                 if (c == 'edit') {
                     $("#design-holder").removeClass('edit')
-                    return ''
+                    return ['','Abrir Modo Editor']
                 }
                 $("#design-holder").addClass('edit')
                 $('#design-area .dash-graph').each(function() {
                     addEditButtons($(this).find('div')[0])
                     dragElement($(this).find('.fa-up-down-left-right')[0])
                 })
-                return 'edit'
+                return ['edit','Cerrar Modo Editor']
             }
-            return window.dash_clientside.no_update
+            return [window.dash_clientside.no_update,window.dash_clientside.no_update]
         }
     """,
     Output("design-area", "className"),
+    Output("toggleEdit","children"),
     Input("toggleEdit", "n_clicks"),
     State("design-area", "className")
 )

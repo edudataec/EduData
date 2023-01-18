@@ -60,7 +60,8 @@ layout = html.Div(
                                     [
                                         html.Div(dbc.Button("CARGAR", color="primary", className="me-1 mt-3 mb-3", id="cargar"), id="cargar_cont"),
                                         html.Div(id="button_func_enabler", style={"display":"none"}),
-                                        html.Div(id="cargar_target")
+                                        html.Div(id="cargar_target"),
+                                        html.Div(id="edit_tg")
                                     ],
                                     width="auto"
                                 ),
@@ -81,6 +82,11 @@ layout = html.Div(
     ]
 )
 
+@callback(Output("edit_tg", "children"), Input("editor_nav", "n_clicks"))
+def edit_nav(n1):
+    if n1 is not None:
+        return dcc.Location(pathname="/editor", id="id_no_importa2")
+
 @callback(Output("cargar", "disabled"), Output("button_func_enabler", "children"), Input("cargar", "n_clicks"))
 def button_disabler(n_clicks):
     if n_clicks is not None:
@@ -88,11 +94,16 @@ def button_disabler(n_clicks):
     else:
         return False, None
 
-@callback(Output("data_path", "data"), Output("cargar_cont", "children"), Output("table_display", "style"), Output("nombre_archivo", "style"), Output("no_data_header", "style"), Output("data_page", "style"),
+@callback(Output("data_path", "data"), Output("cargar_cont", "children"), Output("table_display", "style"),
+ Output("nombre_archivo", "style"), Output("no_data_header", "style"), Output("data_page", "style"),
+ Output("alertData", "children"), Output("statusAlertData", "is_open"),
 Input("button_func_enabler", "children"), State("data_path", "data"), State("project_title", "data"))
 def cargar_data(enable, x, title):
     trigger_id = ctx.triggered_id
-    button = dbc.Button("CARGAR", color="primary", className="me-1 mt-3 mb-3", id="cargar")
+    buttons = [
+        dbc.Button("CAMBIAR", color="primary", className="me-1 mt-3 mb-3", id="cargar"),
+        dbc.Button("EDITOR", color="primary", className="me-1 mt-3 mb-3", id="editor_nav")
+    ]
     file_path = ""
     with open("dashboards/" + title) as json_file:
         dash_data = json.load(json_file)
@@ -103,16 +114,23 @@ def cargar_data(enable, x, title):
         file_path = askopenfilename(parent=root)
         root.destroy()
         if file_path!="":
+            #User selecciona archivo
             dash_data["data_path"] = file_path
 
             with open("dashboards/" + title, "w") as outfile:
                 json.dump(dash_data, outfile)
             
-            return file_path, button, None, None, {"display":"none"}, {"background-color":"lightgrey", "height":"auto"}
+            return file_path, buttons, None, None, {"display":"none"}, {"background-color":"lightgrey", "height":"auto"}, 'Datos cargados exitosamente, puedes ir al editor.', True
+        elif (dash_data["data_path"] != "") :
+            #User no selecciona archivo pero ya tiene datos cargados
+            return dash_data["data_path"], buttons, None, None, {"display":"none"}, {"background-color":"lightgrey", "height":"auto"}, '', False
     elif (dash_data["data_path"] != "") :
+        #User tiene datos cargados y no aplastó el boton de cargar datos
         file_path = dash_data["data_path"]
-        return file_path, button, None, None, {"display":"none"}, {"background-color":"lightgrey", "height":"auto"}
-    return dash.no_update, button, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+        return file_path, buttons, None, None, {"display":"none"}, {"background-color":"lightgrey", "height":"auto"}, '', False
+    #User no tiene datos cargados y no aplastó el boton de cargar datos o no seleccionó datos
+    button = dbc.Button("CARGAR", color="primary", className="me-1 mt-3 mb-3", id="cargar")
+    return dash.no_update, button, {"display":"none"}, {"display":"none"}, None, {"background-color":"lightgrey", "height":"100%"}, '', False
 
 @callback(Output("nombre_archivo", "children"), Input("data_path", "modified_timestamp"), State("data_path", "data"))
 def update_title(ts, data):

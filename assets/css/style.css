@@ -207,12 +207,13 @@ body {
     display: block;
 }
 
-#statusAlert #alert {
+#statusAlert #alert, #statusAlertData #alertData {
     height: 100%;
     font-size: 1.5em;
     border-radius: 5px;
     display: flex;
     justify-content: center;
+    text-align: center;
 }
 
 #design-area.edit {
