@@ -207,7 +207,7 @@ body {
     display: block;
 }
 
-#statusAlert #alert, #statusAlertData #alertData {
+#statusAlert #alert, #statusAlertData #alertData, #statusAlertDashboard #alertDashboard {
     height: 100%;
     font-size: 1.5em;
     border-radius: 5px;

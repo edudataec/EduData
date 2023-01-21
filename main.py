@@ -25,6 +25,12 @@ app.layout = html.Div(
             is_open=False,
             centered=True,
         ),
+        dbc.Modal(
+            id="statusAlertDashboard",
+            children=[html.Div(id="alertDashboard", className="alert-danger")],
+            is_open=False,
+            centered=True,
+        ),
         dcc.Store(id="dataInfo", data=[], storage_type="session"),
         dcc.Store(id="figureStore", data=[], storage_type="session"),
         dcc.Store(id="focused-graph", storage_type="session"),
