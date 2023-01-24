@@ -1,7 +1,12 @@
 import codecs
+import datetime
 import json
 from string import Template
 import os
+
+from pages.utils.buildCols import getColumns
+from .makeCharts import findFunc
+from inspect import signature
 
 
 script_body_temp = '''
@@ -84,6 +89,110 @@ def export_from_json(title):
     script_body = Template(script_body_temp).substitute(graphs=",\n\t\t".join(graphs), data_path=dash_data["data_path"])
     with codecs.open(str(get_download_path()) + "\\" + title.split(".")[0] + "_result.py", "w", "utf-8") as outfile:
         outfile.write(script_body)
+
+def import_as_json(path):
+    with open(path, 'r') as script:
+        data = script.read()
+
+    if len(data)>0:
+        title = path.split("/")[-1]
+        result = {
+            "id": title.split(".")[0],
+            "data_path": "",
+            "contenedores": [],
+            "last_selected": "",
+            "selected": ""
+        }
+        contenedores = []
+        items = data.split('html.Div')
+        for item in items:
+            if "pandas_load_wrapper(\"" in item:
+                data_index = item.find("pandas_load_wrapper(\"")+len("pandas_load_wrapper(\"")
+                data_path = item[data_index:find_next_char(item, data_index, '\"')]
+                result["data_path"] = data_path
+            if "id=\"div\"" in item:
+                item = item[item.find("[")+len("["):item.rfind("],")]
+                print(item)
+                div_items = item.split("dcc.Graph")
+                id_count = 1
+                for div_item in div_items[1::]:
+                    div_item = div_item.strip()
+                    div_item = div_item.replace(" ", "")
+                    graph = div_item[div_item.find("(")+len("("):div_item.rfind(")")]
+                    print("graphs=" + graph)
+                    cont = {
+                        "figure": {},
+                        "chart": "",
+                        "id": {
+                            "index": id_count,
+                            "type": "design-charts"
+                        },
+                        "style": {}
+                    }
+                    if "figure=" in graph:
+                        selectChart = graph[graph.find("figure=")+len("figure="):graph.rfind("(")]
+                        cont["chart"]=selectChart
+                        sig = signature(findFunc(selectChart))
+                        graph_data = graph[graph.find(selectChart + "(")+len(selectChart + "("):graph.rfind(")")]
+                        #Conseguir los parámetros del gráfico
+                        figure = {}
+                        for param in sig.parameters.values():
+                            if str(param).split("=")[0] in graph_data and str(param).split("=")[0] != "data_frame":
+                                param_index = graph_data.find(str(param).split("=")[0] + "=")+len(str(param).split("=")[0] + "=")
+                                if graph_data[param_index]=="[":
+                                    values = graph_data[param_index+1:find_next_char(graph_data, param_index, ']')]
+                                    values = values.replace("\"","")
+                                    values = values.split(",")
+                                else:
+                                    values = graph_data[param_index+1:find_next_char(graph_data, param_index, '"')]
+                                figure[str(param).split("=")[0]] = values
+                        cont["figure"]=figure
+                    #Conseguir los parámetros del style
+                    if "style=" in graph:
+                        style_data = graph[graph.find("style={")+len("style={"):graph.rfind("}")]
+                        style_data = style_data.replace("'", "")
+                        style_data = style_data.replace('"', "")
+                        style_items = style_data.split(",")
+                        style = {}
+                        for style_item in style_items:
+                            style_param = style_item.split(":")[0]
+                            style_val = style_item.split(":")[1]
+                            style[style_param] = style_val
+                        cont["style"]=style
+                    id_count+=1
+                    contenedores.append(cont)
+                result["contenedores"]=contenedores
+        print("\n")
+        print(result)
+        #Actualizar historial de proyectos
+        with open("assets/historial_proyectos.json") as json_file:
+            historial = json.load(json_file)
+        try:
+            history_title = historial["projects"][result["id"]]
+            return False
+        except:
+            historial["projects"][result["id"]] = {"date_created":datetime.datetime.now().__str__(), "last_opened":datetime.datetime.now().__str__()}
+        
+        with open("assets/historial_proyectos.json", "w") as outfile:
+            json.dump(historial, outfile)
+
+        #Crear json de dashboard
+        with open("dashboards/"+result["id"]+".json", "w") as outfile:
+            json.dump(result, outfile)
+
+        return True
+    return False
+
+def find_next_char(string, start_index, target):
+    if len(target) != 1:
+        return None
+    count = start_index + 1
+    while count<len(string):
+        if string[count] == target:
+            return count
+        count+=1
+    return None
+
 
 def get_download_path():
     """Returns the default downloads path for linux or windows"""
