@@ -77,8 +77,8 @@
     align-items: center;
     justify-content: space-evenly;
     background-color:white;
-    border-top-left-radius: 20%;
-    border-top-right-radius: 20%;
+    border-top-left-radius: 10%;
+    border-top-right-radius: 10%;
     border: 1px solid black;
     width:100%;
     height:70%
@@ -88,6 +88,227 @@
     height: 70%;
     width: 70%;
   }
+
+  .mantine-Accordion-content > div {
+    background-color: rgba(0,0,0,0.15);
+    padding-left: 5px;
+    padding-right: 5px;
+    margin-left: -10px;
+}
+
+#errorsCanvas {
+    width: 100%;
+    max-height: 25vh;
+    overflow-y: auto;
+    color: red;
+}
+
+#errorsCanvas > pre {
+    border: 1pt solid silver;
+}
+
+#design-area .dash-graph {
+  position: absolute;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+#design-area.edit .dash-graph {
+  resize: both;
+  padding: 0;
+  border: 2pt dashed black;
+}
+
+#design-area.edit .dash-graph>div:first-of-type {
+    z-index: 1;
+    position: absolute;
+    width: 98%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#design-area.edit .fa-solid {
+    font-size: 30pt;
+    border-radius: 30px;
+    padding: 10px;
+    box-shadow: 2px 2px 5px black;
+    margin: 5px;
+    cursor: pointer;
+}
+
+#design-area.edit .fa-up-down-left-right {
+    cursor: move;
+}
+
+#design-area.edit .dash-graph .js-plotly-plot {
+    z-index: -1;
+    opacity: 50%;
+    overflow: hidden;
+    max-height: 100%;
+    max-width: 100%;
+}
+
+.nav-pills .nav-link.active {
+    color: #fff;
+    background-color: black;
+}
+
+body {
+    font-size: 12pt;
+}
+
+#design-holder {
+    border: 1pt solid black;
+    border-radius: 5px
+}
+
+#design-holder button {
+    margin: 1%;
+    box-shadow:5px 2px 10px black;
+}
+
+#design-holder #openDesignEditor, #design-holder #deleteLayout {
+    display: none
+}
+
+#design-holder.edit #openDesignEditor, #design-holder.edit #deleteLayout {
+    display: initial
+}
+
+.locked {
+    content: "Loading Please Wait";
+    z-index: -50;
+    opacity: 0.2;
+}
+
+.hidden {
+    display: none;
+}
+
+#design-holder {
+    width:100%;
+    height:100%;
+    position:absolute;
+}
+
+#design-holder.expanded {
+    width:100%;
+    height:100%;
+    position:absolute;
+}
+
+#design-area {
+    overflow: auto;
+}
+
+.modebar:hover {
+    display: block;
+}
+
+#statusAlert #alert, #statusAlertData #alertData, #statusAlertDashboard #alertDashboard {
+    height: 100%;
+    font-size: 1.5em;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}
+
+#design-area.edit {
+  background-size: 50px 50px;
+  background-image:
+    linear-gradient(to right, rgba(0,0,0,0.125) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,0.125) 1px, transparent 1px);
+}
+
+.focused-graph .modebar {
+ z-index: 2;
+}
+
+.highlighting {
+    box-shadow: 0px 0px 15px yellow;
+}
+
+input.highlighting {
+    border: 5px yellow;
+}
+
+button.hightlighting {
+    border: 5px yellow;
+}
+
+.options-slider-cont-up {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    left: 10px;
+    bottom: 0px;
+    width: 130px;
+    height: 160px;
+}
+
+.options-slider-cont-down{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    left: 10px;
+    bottom: 0px;
+    width: 130px;
+    height: 160px;
+    transform: translateY(120px);
+}
+
+.slider-button-cont{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color:white;
+    border-top-left-radius: 20%;
+    border-top-right-radius: 20%;
+    border-top: 1px solid black;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    border-bottom: 1px solid white;
+    transform: translateY(1.3px);
+    width:30%;
+    height:30%
+}
+
+.slider-opt-cont{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    background-color:white;
+    border-top-left-radius: 10%;
+    border-top-right-radius: 10%;
+    border: 1px solid black;
+    width:100%;
+    height:70%
+}
+
+#slider-button{
+    height: 70%;
+    width: 70%;
+}
+
+.hide{
+    position: fixed;
+    font-size: 15pt;
+    border-radius: 30px;
+    padding: 10px;
+    box-shadow: 2px 2px 5px black;
+    right: 10px;
+    bottom: 10px;
+}
+
+.hide:hover{
+    opacity: 50%;
+}
 
 @media (min-width: 576px) { 
     .card-title{
