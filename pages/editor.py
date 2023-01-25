@@ -1,3 +1,4 @@
+import base64
 import json
 import dash
 from dash import Dash, dcc, Output, Input, html, page_container, callback, State, MATCH, ctx, ALL, clientside_callback
@@ -6,8 +7,6 @@ from .utils.util import pandas_load_wrapper
 from .utils.makeCharts import makeCharts, getOpts, parseSelections, makeDCC_Graph
 from inspect import getmembers, isfunction
 from dash.exceptions import PreventUpdate
-import tkinter as tk
-from tkinter.filedialog import askopenfilename
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 import plotly.express as px
@@ -218,7 +217,7 @@ layout = html.Div(
                 ),
                 html.Div(
                     [
-                        dbc.Button("IMPORTAR", id="imp_button"),
+                        dcc.Upload(dbc.Button("IMPORTAR", id="imp_button"), id="imp_button_upload"),
                         dbc.Button("EXPORTAR", id="exp_button")
                     ],
                     className="slider-opt-cont"
@@ -420,57 +419,40 @@ def updateLayout(n1, d1, figs, load, data, opts, selectChart, children, target, 
             return children, figouts, btn
     raise PreventUpdate
 
-'''@callback(
-    Output("figureStore", "data"),
-    Input("load_json", "n_clicks"),
-    State("project_title", "data"),
-)
-def load_json(n1,title):
-    triggered = ctx.triggered_id
-    if triggered == "load_json":
-        with open("dashboards/"+title) as json_file:
-            dash_data = json.load(json_file)
-
-        return dash_data["contenedores"]'''
-
 @callback(
     Output("alert", "children"),
     Output("statusAlert", "is_open"),
     Output("alert", "className"),
     Input("exp_button", "n_clicks"),
-    Input("imp_button", "n_clicks"),
+    Input("imp_button_upload", "contents"),
     Input("figureStore", "data"),
     State("project_title", "data"),
+    State("imp_button_upload", "filename"),
+    prevent_initial_call = True
 )
-def save_json(n, n1, figures, title):
+def save_json(n, contents, figures, title, filename):
     print(figures)
     if ctx.triggered_id == "exp_button":
         if n>0:
             export_from_json(title)
             return 'Se exportó el dashboard en la carpeta de descargas', True, "alert-success"
-    elif ctx.triggered_id == "imp_button":
-        if n1>0:
-            root = tk.Tk()
-            root.withdraw()
-            root.wm_attributes('-topmost', 1)
-            file_path = askopenfilename(parent=root)
-            print(file_path)
-            root.destroy()
-            if file_path!="":
-                file_name = file_path.split("/")[-1]
-                file_end = file_name.split(".")[1]
-                title = file_name.split(".")[0]
-                if file_end != "py":
-                    return 'No se seleccionó un script de Python.', True, "alert-danger"
-                try:
-                    if import_as_json(file_path):
-                        return 'Se importó el archivo correctamente, con el nombre:' + title, True, "alert-success"
-                    else:
-                        return 'Error cargando el script seleccionado', True, "alert-danger"
-                except:
-                    return 'Error importando en script seleccionado', True, "alert-danger"
-            else:
-                return 'No se seleccionó ningún archivo', True, "alert-danger"
+    elif ctx.triggered_id == "imp_button_upload":
+        if contents is not None and filename!="":
+            file_end = filename.split(".")[1]
+            title = filename.split(".")[0]
+            if file_end != "py":
+                return 'No se seleccionó un script de Python.', True, "alert-danger"
+            try:
+                content_type, content_string = contents.split(',')
+                decoded = base64.b64decode(content_string)
+                if import_as_json(filename, decoded.decode('utf-8')):
+                    return 'Se importó el archivo correctamente, con el nombre:' + title, True, "alert-success"
+                else:
+                    return 'Error cargando el script seleccionado', True, "alert-danger"
+            except:
+                return 'Error importando el script seleccionado', True, "alert-danger"
+        else:
+            raise PreventUpdate
     elif figures is not None:
         with open("dashboards/" + title) as json_file:
             dash_data = json.load(json_file)
