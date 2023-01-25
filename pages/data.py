@@ -233,7 +233,7 @@ def load_data(ts, data_path):
             df = pd.DataFrame()
             df = pandas_load_wrapper(data_path)
 
-            if not df.empty() and df is not None:
+            if df is not None:
                 return df.to_dict("records")
         except:
             print("error")
