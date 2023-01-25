@@ -10,6 +10,7 @@ import json
 import traceback
 from .buildCols import getColumns
 
+firstParameters = ["title","x","y","color","line_group","r","thetha","points","names","values","parents","z","lat","lon","geojson","locations","dimensions","a","b","c","x_start","x_end"]
 
 layoutList = [
     "arg",
@@ -162,6 +163,7 @@ def parseSelections(opts, layout):
 
 def getOpts(selectChart, id, figs, data={}):
     layout = []
+    firstlayout=[]
     sig = signature(findFunc(selectChart))
     cols, multiCols= getColumns(selectChart)
     figureData = {}
@@ -169,72 +171,141 @@ def getOpts(selectChart, id, figs, data={}):
         for f in figs:
             if str(f["id"]).replace("'",'"').replace(" ","") == id:
                 figureData = f["figure"]
-    for param in sig.parameters.values():
-        layout.append(html.Div(str(param).split("=")[0] + ":", className="dbc"))
-        if "data_frame" in str(param):
-            layout.append(
-                dcc.Input(
-                    id=str(param).split("=")[0],
-                    placeholder=str(param).split("=")[0],
-                    value="data",
-                    disabled=True,
-                )
-            )
-        else:
-            if str(param).split("=")[0] in figureData:
-                val = figureData[str(param).split("=")[0]]
-            else:
-                val = ""
-            if (
-                str(param).split("=")[0] in cols
-                or str(param).split("=")[0] in multiCols
-            ):
-                if str(param).split("=")[0] in multiCols:
-                    layout.append(
-                        dcc.Dropdown(
-                            id=str(param).split("=")[0],
-                            value=val,
-                            placeholder=str(param).split("=")[0],
-                            options=data.columns,
-                            multi=True,
-                        )
-                    )
-                else:
-                    layout.append(
-                        dcc.Dropdown(
-                            id=str(param).split("=")[0],
-                            value=val,
-                            placeholder=str(param).split("=")[0],
-                            options=data.columns,
-                        )
-                    )
-            elif str(param).split("=")[0] == "template":
-                layout.append(
-                    dcc.Dropdown(
-                        id=str(param).split("=")[0],
-                        value=val,
-                        placeholder=str(param).split("=")[0],
-                        options=[t for t in templates],
-                    )
-                )
 
-            else:
-                if not isinstance(val, str):
-                    val = json.dumps(val)
-                layout.append(
-                    dcc.Input(
-                        id=str(param).split("=")[0],
-                        value=val,
-                        placeholder=str(param).split("=")[0],
-                    )
+    print("Llegaste a las figuras -----------------------------------------------------------")
+    print(str(figureData))
+    print(str(figs))
+    print(sig.parameters.values())
+
+    
+    for param in sig.parameters.values():
+        if str(param).split("=")[0] in firstParameters:
+            if "title" in str(param):
+                firstlayout.insert(2,(html.Div(str(param).split("=")[0] + ":", className="dbc")))
+                firstlayout.insert(3,
+                    (dcc.Input(
+                            id=str(param).split("=")[0],
+                            placeholder=str(param).split("=")[0]
+                    ))
                 )
+            else:    
+                firstlayout.append(html.Div(str(param).split("=")[0] + ":", className="dbc"))
+                if str(param).split("=")[0] in figureData:
+                    val = figureData[str(param).split("=")[0]]
+                else:
+                    val = ""
+                if (
+                    str(param).split("=")[0] in cols
+                    or str(param).split("=")[0] in multiCols
+                ):
+                    if str(param).split("=")[0] in multiCols:
+                        firstlayout.append(
+                            dcc.Dropdown(
+                                id=str(param).split("=")[0],
+                                value=val,
+                                placeholder=str(param).split("=")[0],
+                                options=data.columns,
+                                multi=True,
+                            )
+                        )
+                    else:
+                        firstlayout.append(
+                            dcc.Dropdown(
+                                id=str(param).split("=")[0],
+                                value=val,
+                                placeholder=str(param).split("=")[0],
+                                options=data.columns,
+                            )
+                        )
+                elif str(param).split("=")[0] == "template":
+                    firstlayout.append(
+                        dcc.Dropdown(
+                            id=str(param).split("=")[0],
+                            value=val,
+                            placeholder=str(param).split("=")[0],
+                            options=[t for t in templates],
+                        )
+                    )
+
+                else:
+                    if not isinstance(val, str):
+                        val = json.dumps(val)
+                    firstlayout.append(
+                        dcc.Input(
+                            id=str(param).split("=")[0],
+                            value=val,
+                            placeholder=str(param).split("=")[0],
+                        )
+                    )
+        else:
+        
+            
+            if "data_frame" in str(param):
+                firstlayout.insert(0,(html.Div(str(param).split("=")[0] + ":", className="dbc")))
+                firstlayout.insert(1,
+                    (dcc.Input(
+                            id=str(param).split("=")[0],
+                            placeholder=str(param).split("=")[0],
+                            value="data",
+                            disabled=True,
+                    ))
+                )   
+            else:
+                layout.append(html.Div(str(param).split("=")[0] + ":", className="dbc"))
+                if str(param).split("=")[0] in figureData:
+                    val = figureData[str(param).split("=")[0]]
+                else:
+                    val = ""
+                if (
+                    str(param).split("=")[0] in cols
+                    or str(param).split("=")[0] in multiCols
+                ):
+                    if str(param).split("=")[0] in multiCols:
+                        layout.append(
+                            dcc.Dropdown(
+                                id=str(param).split("=")[0],
+                                value=val,
+                                placeholder=str(param).split("=")[0],
+                                options=data.columns,
+                                multi=True,
+                            )
+                        )
+                    else:
+                        layout.append(
+                            dcc.Dropdown(
+                                id=str(param).split("=")[0],
+                                value=val,
+                                placeholder=str(param).split("=")[0],
+                                options=data.columns,
+                            )
+                        )
+                elif str(param).split("=")[0] == "template":
+                    layout.append(
+                        dcc.Dropdown(
+                            id=str(param).split("=")[0],
+                            value=val,
+                            placeholder=str(param).split("=")[0],
+                            options=[t for t in templates],
+                        )
+                    )
+
+                else:
+                    if not isinstance(val, str):
+                        val = json.dumps(val)
+                    layout.append(
+                        dcc.Input(
+                            id=str(param).split("=")[0],
+                            value=val,
+                            placeholder=str(param).split("=")[0],
+                        )
+                    )
     return [
         dmc.AccordionItem(
             [
                 dmc.AccordionControl("Opciones de Gráfico"),
                 dmc.AccordionPanel(
                     html.Div(
-                        layout,
+                        firstlayout + [html.Br(),html.H5("Configuraciones avanzadas:", style={'color': 'darkgrey'})] + layout,
                         style={"maxHeight": "50vh", "overflowY": "auto"},
                         id="details",
                     )

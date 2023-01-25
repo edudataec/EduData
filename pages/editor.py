@@ -290,9 +290,9 @@ def openEditor_edit(n1, isOpen, id, figs):
 def graphingOptions_edit(chart, data, p, id, figs):
     if chart:
         if not data:
-            print("Please load a dataset")
+            print("No ha cargado un set de datos")
             return (
-                "Please load a dataset",
+                "No ha cargado un set de datos",
                 {"visibility": "hidden"},
                 {"visibility": "hidden"},
                 ""
@@ -309,7 +309,7 @@ def graphingOptions_edit(chart, data, p, id, figs):
         except:
             ...
         return getOpts(chart, None, "bruh", df), {"visibility": True}, {"visibility": True}, "assets/imgs/" + chart + ".png"
-    return "Please select an option", {"visibility": "hidden"}, {"visibility": "hidden"}, ""
+    return "Escoger una opción", {"visibility": "hidden"}, {"visibility": "hidden"}, ""
 
 @callback(
     Output("design-area", "children"),

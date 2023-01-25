@@ -1,3 +1,4 @@
+from pydoc import classname
 import dash
 import os
 import re
@@ -43,16 +44,16 @@ layout = html.Div(
                 [
                     dbc.Col(
                         [
-                            html.H3("No hay datos cargados actualmente...", id="no_data_header", style={"text-align":"center"}),
-                            html.H2(id="nombre_archivo", className="mt-3", style={"display":"none"}),
+                            html.H3("No hay datos cargados actualmente...", className="text-center", id="no_data_header", style={"text-align":"center"}),
+                            html.H2(id="nombre_archivo", className="text-center mt-3", style={"display":"none"}),
                             dbc.Row(
                                 dbc.Col(
                                     id="table_cont",
                                     class_name="mt-3",
-                                    width="auto"
+                                    width="90%"
                                 ),
                                 id="table_display",
-                                justify="end"
+                                justify="end",
                             ),
                             dbc.Row(
                                 dbc.Col(
@@ -68,12 +69,13 @@ layout = html.Div(
                             ),
                         ],
                         align="center",
-                        width="auto"
+                        width="100%"
                     )
                 ],
                 id="data_page",
                 align="center",
-                justify="center"
+                justify="center",
+                style={"background-color":"red"}
             ),
             fluid=True,
             style={"background-color":"lightgrey", "height":"95vh", "margin":"0"}
