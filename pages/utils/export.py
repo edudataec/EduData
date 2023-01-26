@@ -86,7 +86,7 @@ def export_from_json(title):
         index+=1
         graphs.append(fig)
 
-    script_body = Template(script_body_temp).substitute(graphs=",\n\t\t".join(graphs), data_path=dash_data["data_path"])
+    script_body = Template(script_body_temp).substitute(graphs=",\n\t\t".join(graphs), data_path=dash_data["data_path"].replace("\\","/"))
     with codecs.open(str(get_download_path()) + "\\" + title.split(".")[0] + "_result.py", "w", "utf-8") as outfile:
         outfile.write(script_body)
 

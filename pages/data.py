@@ -150,6 +150,7 @@ def cargar_data(enable, x, title):
             return None, True, None, dash.no_update
     elif (dash_data["data_path"] != "") :
         #User tiene datos cargados y no aplastó el boton de cargar datos
+        print(dash_data["data_path"])
         file_path = dash_data["data_path"]
         return file_path, False, 1, 1
     #User no tiene datos cargados y no aplastó el boton de cargar datos o no seleccionó datos
@@ -167,7 +168,8 @@ def modal_input(n, value):
     Output("table_cont", "children"), Output("nombre_archivo", "children"),
     Output("cargar_cont", "children"), Output("table_display", "style"),
     Output("nombre_archivo", "style"), Output("no_data_header", "style"), Output("data_page", "style"),
-    Input("data_path", "modified_timestamp"), Input("force_refresh_data", "children"), State("data_path", "data"), State("project_title", "data"), State("cargar_cont", "children")
+    Input("data_path", "modified_timestamp"), Input("force_refresh_data", "children"), State("data_path", "data"), State("project_title", "data"), State("cargar_cont", "children"),
+    prevent_initial_call=True
 )
 def load_data(ts, rf, datapath, title, buttons_ch):
     print(datapath)
