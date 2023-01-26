@@ -47,8 +47,8 @@ layout = html.Div(
                     [
                         dbc.Col(
                             [
-                                html.H3("No hay datos cargados actualmente...", id="no_data_header", style={"text-align":"center"}),
-                                html.H2(id="nombre_archivo", className="mt-3", style={"display":"none"}),
+                                html.H3("No hay datos cargados actualmente...", id="no_data_header", className="text-center", style={"text-align":"center"}),
+                                html.H2(id="nombre_archivo", className="mt-3 text-center", style={"display":"none"}),
                                 dbc.Row(
                                     dbc.Col(
                                         id="table_cont",
@@ -68,11 +68,11 @@ layout = html.Div(
                                         ],
                                         width="auto"
                                     ),
-                                    justify="center"
+                                    justify="center",
                                 ),
                             ],
                             align="center",
-                            width="auto"
+                            width="100%"
                         )
                     ],
                     id="data_page",
