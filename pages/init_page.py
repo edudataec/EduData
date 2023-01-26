@@ -2,9 +2,12 @@ import base64
 import dash
 import json
 import datetime
+import pandas as pd
 from dash import Dash, dcc, Output, Input, html, page_container, callback, ctx, State, ALL
 import dash_bootstrap_components as dbc
 from dash.exceptions import PreventUpdate
+
+from pages.utils.export import get_download_path
 
 dash.register_page(__name__, path='/', name='home')
 
@@ -73,38 +76,6 @@ tab_content2 = dbc.Container(
                         className="mb-3 flip-card",
                         id="card-1"
                     ),
-                    html.Div(
-                        html.Div(
-                            [
-                                dbc.Card(
-                                    [
-                                        dbc.CardHeader(dbc.Row("Desempeño histórico de materia", justify="center", className="card-title")),
-                                        dbc.CardImg(src="/assets/imgs/plantilla_img3.PNG", top=False)
-                                    ],
-                                    class_name="flip-card-front", color="primary", inverse=True
-                                ),
-                                dbc.Card(
-                                    [
-                                        dbc.CardHeader(dbc.Row("Desempeño histórico de materia", justify="center", className="card-title")),
-                                        dbc.CardBody(
-                                            [
-                                                html.P("Este dashboard es útil para realizar seguimiento de las calificaciones de una materia a lo largo de varios años.", className="card-text"),
-                                                html.P("Contiene:", className="card-text"),
-                                                html.P("-Gráfico de líneas", className="card-text"),
-                                                html.P("-Gráfico de barras", className="card-text"),
-                                                html.P("-Histograma", className="card-text")
-                                            ], 
-                                            style={"text-align":"start"}
-                                        )
-                                    ],
-                                    class_name="flip-card-back"
-                                ),
-                            ],
-                            className="flip-card-inner"
-                        ),
-                        className="mb-3 flip-card",
-                        id="card-3"
-                    ),
                 ]
             ),
             dbc.Col(
@@ -141,39 +112,6 @@ tab_content2 = dbc.Container(
                         className="mb-3 flip-card",
                         id="card-2"
                     ),
-                    html.Div(
-                        html.Div(
-                            [
-                                dbc.Card(
-                                    [
-                                        dbc.CardHeader(dbc.Row("Desempeño de estudiantes por carrera", justify="center", className="card-title")),
-                                        dbc.CardImg(src="/assets/imgs/plantilla_img4.PNG", top=False)
-                                    ],
-                                    class_name="flip-card-front", color="primary", inverse=True
-                                ),
-                                dbc.Card(
-                                    [
-                                        dbc.CardHeader(dbc.Row("Desempeño de estudiantes por carrera", justify="center", className="card-title")),
-                                        dbc.CardBody(
-                                            [
-                                                html.P("Este dashboard es útil para realizar seguimiento del desempeño de estudiantes de distintas carreras en una materia", className="card-text"),
-                                                html.P("Contiene:", className="card-text"),
-                                                html.P("-Gráfico de líneas", className="card-text"),
-                                                html.P("-Gráfico de dispersión", className="card-text"),
-                                                html.P("-Gráfico de barras", className="card-text"),
-                                                html.P("-Gráfico de burbujas", className="card-text")
-                                            ], 
-                                            style={"text-align":"start"}
-                                        )
-                                    ],
-                                    class_name="flip-card-back"
-                                ),
-                            ],
-                            className="flip-card-inner"
-                        ),
-                        className="mb-3 flip-card",
-                        id="card-4"
-                    ),
                 ]
             )
         ],
@@ -200,11 +138,19 @@ layout = html.Div(children=[
     dbc.Container(children=[
         dbc.Tabs(
             [
-                dbc.Tab(label="Recientes", tab_id="recientes"),
                 dbc.Tab(label="Plantillas", tab_id="plantillas")
             ],
-            id="tabs",
+            id="tab_p",
             active_tab="plantillas",
+            className="mt-3"
+        ),
+        html.Div(id="content_p",),
+        dbc.Tabs(
+            [
+                dbc.Tab(label="Recientes", tab_id="recientes")
+            ],
+            id="tab_r",
+            active_tab="recientes",
             className="mt-3"
         ),
         dbc.Modal(
@@ -220,7 +166,20 @@ layout = html.Div(children=[
             id="crear_dash_dialg",
             is_open=False
         ),
-        html.Div(id="content",),
+        dbc.Modal(
+            [
+                dbc.ModalHeader(dbc.ModalTitle("Nombra tu dashboard")),
+                dbc.ModalBody(dbc.Input(id="new_plantilla_title", placeholder="Escribe el título de tu dashboard", type="text")),
+                dbc.ModalFooter(
+                    dbc.Button(
+                        "CREAR", id="crear_plantilla"
+                    )
+                )
+            ],
+            id="crear_plantilla_dialg",
+            is_open=False
+        ),
+        html.Div(id="content_r",),
         html.Div(id="card1t",),
         html.Div(id="card2t",),
         html.Div(id="card3t",),
@@ -230,15 +189,18 @@ layout = html.Div(children=[
 ])
 
 #Tab callback
-@callback(Output("content", "children"), [Input("tabs", "active_tab")])
-def switch_tab(at):
-    if at == "recientes":
-        return tab_content1
-    elif at == "plantillas":
+@callback(Output("content_p", "children"), [Input("tab_p", "active_tab")])
+def tab_p(at):
+    if at == "plantillas":
         return tab_content2
 
+@callback(Output("content_r", "children"), [Input("tab_r", "active_tab")])
+def tab_r(at):
+    if at == "recientes":
+        return tab_content1
+
 #Lista Recientes callback
-@callback(Output("reciente-list-cont", "children"), [Input("tabs", "active_tab")])
+@callback(Output("reciente-list-cont", "children"), [Input("tab_r", "active_tab")])
 def update_recientes_list(x):
     with open("assets/historial_proyectos.json") as json_file:
         proyectos = json.load(json_file)["projects"]
@@ -269,21 +231,15 @@ def update_recientes_list(x):
     return list_items
 
 #Callbacks plantillas
-@callback(Output("card1t", "className"), [Input('card-1', 'n_clicks')])
+@callback(Output("crear_plantilla_dialg", "is_open"), [Input('card-1', 'n_clicks')])
 def card_1_click(click):
-    print("Card 1")
+    triggered_id = ctx.triggered_id
+    if triggered_id == 'card-1' and click is not None:
+        return True
 
 @callback(Output("card2t", "className"), [Input('card-2', 'n_clicks')])
 def card_2_click(click):
     print("Card 2")
-
-@callback(Output("card3t", "className"), [Input('card-3', 'n_clicks')])
-def card_3_click(click):
-    print("Card 3")
-
-@callback(Output("card4t", "className"), [Input('card-4', 'n_clicks')])
-def card_4_click(click):
-    print("Card 4")
 
 #Callback botón
 @callback(Output("crear_dash_dialg", "is_open"), [Input("nuevo", "n_clicks"), Input("crear_dash", "n_clicks")], State("crear_dash_dialg", "is_open"), prevent_initial_call=True)
@@ -302,19 +258,26 @@ def button_func(n1, n3, is_open):
     Output("alertDashboard", "children"),
     Output("statusAlertDashboard", "is_open"),
     Input("crear_dash", "n_clicks"),
+    Input("crear_plantilla", "n_clicks"),
     Input({"type":"project", "name":ALL, "index":ALL}, "n_clicks"),
     Input("buscar_upload", "contents"),
     State("new_dash_title", "value"), 
+    State("new_plantilla_title", "value"),
     State("buscar_upload", "filename"),
     prevent_initial_call=True
 )
-def cargar_dash(n, n2, content, title, filename):
+def cargar_dash(n, n2, n3, content, title, plantilla_title, filename):
     trigger = ctx.triggered_id
     print(trigger)
     
     if trigger == "crear_dash" and n is not None:
         if new_dash_project(title, None):
             return title + ".json", dcc.Location(pathname="/data", id="id_no_importa"), dash.no_update, dash.no_update
+        else:
+            return dash.no_update, dash.no_update, "Ya existe un proyecto con el mismo nombre, por favor cambiar el nombre.", True
+    elif trigger == "crear_plantilla" and n2 is not None:
+        if dash_from_plantilla(plantilla_title):
+            return plantilla_title + ".json", dcc.Location(pathname="/data", id="id_no_importa"), dash.no_update, dash.no_update
         else:
             return dash.no_update, dash.no_update, "Ya existe un proyecto con el mismo nombre, por favor cambiar el nombre.", True
     elif trigger == "buscar_upload" and content is not None:
@@ -330,11 +293,48 @@ def cargar_dash(n, n2, content, title, filename):
             return title + ".json", dcc.Location(pathname="/data", id="id_no_importa"), dash.no_update, False
         else:
             return dash.no_update, dash.no_update, "Ya existe un proyecto con el mismo nombre, por favor cambiar el nombre.", True
-    elif trigger["type"] == "project" and n2[trigger["index"]] is not None:
+    elif trigger["type"] == "project" and n3[trigger["index"]] is not None:
         update_recent_project(trigger["name"])
         return trigger["name"] + ".json", dcc.Location(pathname="/data", id="id_no_importa"), dash.no_update, dash.no_update
     else:
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+
+def dash_from_plantilla(title):
+    with open("assets/historial_proyectos.json") as json_file:
+        historial = json.load(json_file)
+
+    with open("plantillas/Plantilla_4.json") as json_file:
+        dash_meta_data = json.load(json_file)
+
+    if not dash_meta_data:
+        return False
+
+    try:
+        history_title = historial["projects"][title]
+        return False
+    except:
+        historial["projects"][title] = {"date_created":datetime.datetime.now().__str__(), "last_opened":datetime.datetime.now().__str__()}
+
+    #Copiar data de plantilla en downloads
+    downloads_path = get_download_path()
+
+    try:
+        df = pd.read_csv("plantillas/data/Alumnos.csv")
+        
+        df.to_csv(str(downloads_path)+ "\\" + "Alumnos.csv")
+    except:
+        return False
+
+    dash_meta_data["data_path"] = str(downloads_path)+ "\\" + "Alumnos.csv"
+
+    with open("assets/historial_proyectos.json", "w") as outfile:
+        json.dump(historial, outfile)
+
+    with open("dashboards/" + title + ".json", "w") as outfile:
+        json.dump(dash_meta_data, outfile) 
+    
+    return True
 
 def new_dash_project(title, data):
     with open("assets/historial_proyectos.json") as json_file:

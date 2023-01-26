@@ -129,7 +129,7 @@ def cargar_data(enable, x, title):
         dash_data = json.load(json_file)
     if trigger_id == "button_func_enabler" and enable is not None:
         print(enable)
-        sys = 'Darwin'
+        sys = platform.system()
         if sys != 'Darwin':
             root = tk.Tk()
             root.withdraw()
