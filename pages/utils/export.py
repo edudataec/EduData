@@ -90,12 +90,13 @@ def export_from_json(title):
     with codecs.open(str(get_download_path()) + "\\" + title.split(".")[0] + "_result.py", "w", "utf-8") as outfile:
         outfile.write(script_body)
 
-def import_as_json(path):
-    with open(path, 'r') as script:
-        data = script.read()
+def import_as_json(filename, data):
+    print(data)
+    print(len(data))
+    print(type(data))
 
     if len(data)>0:
-        title = path.split("/")[-1]
+        title = filename
         result = {
             "id": title.split(".")[0],
             "data_path": "",
@@ -106,6 +107,7 @@ def import_as_json(path):
         contenedores = []
         items = data.split('html.Div')
         for item in items:
+            print(item)
             if "pandas_load_wrapper(\"" in item:
                 data_index = item.find("pandas_load_wrapper(\"")+len("pandas_load_wrapper(\"")
                 data_path = item[data_index:find_next_char(item, data_index, '\"')]

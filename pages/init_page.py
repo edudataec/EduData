@@ -1,10 +1,9 @@
+import base64
 import dash
 import json
 import datetime
 from dash import Dash, dcc, Output, Input, html, page_container, callback, ctx, State, ALL
 import dash_bootstrap_components as dbc
-import tkinter as tk
-from tkinter.filedialog import askopenfilename
 from dash.exceptions import PreventUpdate
 
 dash.register_page(__name__, path='/', name='home')
@@ -22,8 +21,7 @@ tab_content1 = dbc.Container([
         [
             dbc.Col(
                 [
-                    html.Div(dbc.Button("BUSCAR", color="primary", className="me-1", id="buscar"), id="buscar_cont"),
-                    html.Div(id="buscar_func_enabler", style={"display":"none"}),
+                    dcc.Upload(dbc.Button("BUSCAR", color="primary", className="me-1", id="buscar"), id="buscar_upload"),
                 ],
                 align="center",
                 width="auto"
@@ -288,66 +286,57 @@ def card_4_click(click):
     print("Card 4")
 
 #Callback botón
-@callback(Output("crear_dash_dialg", "is_open"), [Input("buscar", "n_clicks"), Input("nuevo", "n_clicks"), Input("crear_dash", "n_clicks")], State("crear_dash_dialg", "is_open"), prevent_initial_call=True)
-def button_func(n1, n2, n3, is_open):
+@callback(Output("crear_dash_dialg", "is_open"), [Input("nuevo", "n_clicks"), Input("crear_dash", "n_clicks")], State("crear_dash_dialg", "is_open"), prevent_initial_call=True)
+def button_func(n1, n3, is_open):
     button_clicked = ctx.triggered_id
     if is_open:
         return not is_open
     else:
-        if button_clicked == "buscar" and n1 is not None:
-            print("buscar")
-        elif button_clicked == "nuevo" and n2 is not None:
+        if button_clicked == "nuevo" and n1 is not None:
             return not is_open
 
 #Callback crear dashboard nuevo
 @callback(
     Output("project_title", "data"),
-    Output("button_target", "children"), 
-    Output("buscar_cont", "children"), 
+    Output("button_target", "children"),
     Output("alertDashboard", "children"),
     Output("statusAlertDashboard", "is_open"),
     Input("crear_dash", "n_clicks"),
     Input({"type":"project", "name":ALL, "index":ALL}, "n_clicks"),
-    Input("buscar_func_enabler", "children"),
+    Input("buscar_upload", "contents"),
     State("new_dash_title", "value"), 
+    State("buscar_upload", "filename"),
     prevent_initial_call=True
 )
-def cargar_dash(n, n2, n3, title):
+def cargar_dash(n, n2, content, title, filename):
     trigger = ctx.triggered_id
     print(trigger)
     
     if trigger == "crear_dash" and n is not None:
-        if new_dash_project(title):
-            return title + ".json", dcc.Location(pathname="/data", id="id_no_importa"), dash.no_update, dash.no_update, dash.no_update
+        if new_dash_project(title, None):
+            return title + ".json", dcc.Location(pathname="/data", id="id_no_importa"), dash.no_update, dash.no_update
         else:
-            return dash.no_update, dash.no_update, dash.no_update, "Ya existe un proyecto con el mismo nombre, por favor cambiar el nombre.", True
-    elif trigger == "buscar_func_enabler" and n3 is not None:
-        file_path = ""
-        button = dbc.Button("BUSCAR", color="primary", className="me-1 mt-3 mb-3", id="buscar")
-        root = tk.Tk()
-        root.withdraw()
-        root.wm_attributes('-topmost', 1)
-        file_path = askopenfilename(parent=root)
-        print(file_path)
-        root.destroy()
-        if file_path!="":
-            file_name = file_path.split("/")[-1]
-            file_end = file_name.split(".")[1]
-            title = file_name.split(".")[0]
-            print(title)
-            if file_end != "json":
-                return dash.no_update, dash.no_update, button, "No se seleccionó un archivo json.", True
-            elif new_dash_project(title):
-                return title + ".json", dcc.Location(pathname="/data", id="id_no_importa"), button, dash.no_update, False
-            else:
-                return dash.no_update, dash.no_update, button, "Ya existe un proyecto con el mismo nombre, por favor cambiar el nombre.", True
+            return dash.no_update, dash.no_update, "Ya existe un proyecto con el mismo nombre, por favor cambiar el nombre.", True
+    elif trigger == "buscar_upload" and content is not None:
+        file_end = filename.split(".")[1]
+        title = filename.split(".")[0]
+        if file_end != "json":
+            return dash.no_update, dash.no_update, "No se seleccionó un archivo json.", True
+        
+        content_type, content_string = content.split(',')
+        decoded = base64.b64decode(content_string)
+        data = json.loads(decoded)
+        if new_dash_project(title, data):
+            return title + ".json", dcc.Location(pathname="/data", id="id_no_importa"), dash.no_update, False
+        else:
+            return dash.no_update, dash.no_update, "Ya existe un proyecto con el mismo nombre, por favor cambiar el nombre.", True
     elif trigger["type"] == "project" and n2[trigger["index"]] is not None:
         update_recent_project(trigger["name"])
-        return trigger["name"] + ".json", dcc.Location(pathname="/data", id="id_no_importa"), dash.no_update, dash.no_update, dash.no_update
+        return trigger["name"] + ".json", dcc.Location(pathname="/data", id="id_no_importa"), dash.no_update, dash.no_update
     else:
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
-def new_dash_project(title):
+def new_dash_project(title, data):
     with open("assets/historial_proyectos.json") as json_file:
         historial = json.load(json_file)
 
@@ -360,13 +349,16 @@ def new_dash_project(title):
     with open("assets/historial_proyectos.json", "w") as outfile:
         json.dump(historial, outfile)
 
-    dash_meta_data = {
-        "id":title,
-        "data_path":"",
-        "contenedores":[],
-        "last_selected":"none",
-        "selected":"none"
-    }
+    if data is not None:
+        dash_meta_data = data
+    else:
+        dash_meta_data = {
+            "id":title,
+            "data_path":"",
+            "contenedores":[],
+            "last_selected":"none",
+            "selected":"none"
+        }
     with open("dashboards/" + title + ".json", "w") as outfile:
         json.dump(dash_meta_data, outfile) 
     
@@ -381,9 +373,3 @@ def update_recent_project(title):
     with open("assets/historial_proyectos.json", "w") as outfile:
         json.dump(historial, outfile)
 
-@callback(Output("buscar", "disabled"), Output("buscar_func_enabler", "children"), Input("buscar", "n_clicks"))
-def buscar_disabler(n_clicks):
-    if n_clicks is not None:
-        return True, "1"
-    else:
-        return False, None
