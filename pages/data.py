@@ -1,3 +1,5 @@
+from pydoc import classname
+
 import platform
 import dash
 import os
@@ -23,8 +25,7 @@ layout = html.Div(
                     dcc.Link(
                         dbc.Row(
                             [
-                                dbc.Col(html.Img(src="https://images.plot.ly/logo/new-branding/plotly-logomark.png", height="40px")),
-                                dbc.Col(dbc.NavbarBrand("Titulo", className="ms-2"))
+                                dbc.Col(html.Img(src="assets/imgs/logo.svg", height="40px"))
                             ],
                             align="center",
                             className="g-0"
@@ -52,7 +53,7 @@ layout = html.Div(
                                     dbc.Col(
                                         id="table_cont",
                                         class_name="mt-3",
-                                        width="auto"
+                                        width="90%"
                                     ),
                                     id="table_display",
                                     justify="end"

@@ -187,8 +187,7 @@ layout = html.Div(children=[
             html.A(
                 dbc.Row(
                     [
-                        dbc.Col(html.Img(src="https://images.plot.ly/logo/new-branding/plotly-logomark.png", height="40px")),
-                        dbc.Col(dbc.NavbarBrand("Titulo", className="ms-2"))
+                        dbc.Col(html.Img(src="assets/imgs/logo.svg", height="40px"))
                     ],
                     align="center",
                     className="g-0"
