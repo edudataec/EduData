@@ -24,19 +24,19 @@ tab_content1 = dbc.Container([
         [
             dbc.Col(
                 [
-                    dcc.Upload(dbc.Button("BUSCAR", color="primary", className="me-1", id="buscar"), id="buscar_upload"),
+                    dcc.Upload(dbc.Button("BUSCAR", color="primary", className="me-1 init-button", id="buscar"), id="buscar_upload"),
                 ],
                 align="center",
                 width="auto"
             ),
             dbc.Col(
-                dbc.Button("CREAR NUEVO", color="primary", className="me-1", id="nuevo"),
+                dbc.Button("CREAR NUEVO", color="primary", className="me-1 init-button", id="nuevo"),
                 align="center",
                 width="auto"
             )
         ],
         justify="end",
-        className="mb-3"
+        className="mb-3 init-button-cont"
     )
 ])
 tab_content2 = dbc.Container(
