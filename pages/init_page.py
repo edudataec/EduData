@@ -61,9 +61,9 @@ tab_content2 = dbc.Container(
                                             [
                                                 html.P("Este dashboard es útil para realizar seguimiento de las calificaciones de todo un curso.", className="card-text"),
                                                 html.P("Contiene:", className="card-text"),
-                                                html.P("-Gráfico de líneas", className="card-text"),
-                                                html.P("-Gráfico de dispersión", className="card-text"),
-                                                html.P("-Gráfico de barras", className="card-text")
+                                                html.P("-Pie chart", className="card-text"),
+                                                html.P("-Gráfico de cajas", className="card-text"),
+                                                html.P("-Histograma", className="card-text")
                                             ], 
                                             style={"text-align":"start"}
                                         )

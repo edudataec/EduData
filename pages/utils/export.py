@@ -119,7 +119,6 @@ def import_as_json(filename, data):
                 id_count = 1
                 for div_item in div_items[1::]:
                     div_item = div_item.strip()
-                    div_item = div_item.replace(" ", "")
                     graph = div_item[div_item.find("(")+len("("):div_item.rfind(")")]
                     print("graphs=" + graph)
                     cont = {
