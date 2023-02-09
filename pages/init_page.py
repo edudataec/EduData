@@ -7,7 +7,7 @@ from dash import Dash, dcc, Output, Input, html, page_container, callback, ctx, 
 import dash_bootstrap_components as dbc
 from dash.exceptions import PreventUpdate
 
-from pages.utils.export import get_download_path
+from pages.utils.export import get_download_path, import_as_json
 
 dash.register_page(__name__, path='/', name='home')
 
@@ -283,14 +283,19 @@ def cargar_dash(n, n2, n3, content, title, plantilla_title, filename):
     elif trigger == "buscar_upload" and content is not None:
         file_end = filename.split(".")[1]
         title = filename.split(".")[0]
-        if file_end != "json":
+        if file_end != "json" and file_end != "py":
             return dash.no_update, dash.no_update, "No se seleccionó un archivo json.", True
-        
-        content_type, content_string = content.split(',')
-        decoded = base64.b64decode(content_string)
-        data = json.loads(decoded)
-        if new_dash_project(title, data):
-            return title + ".json", dcc.Location(pathname="/data", id="id_no_importa"), dash.no_update, False
+        elif file_end == "json":
+            content_type, content_string = content.split(',')
+            decoded = base64.b64decode(content_string)
+            data = json.loads(decoded)
+            if new_dash_project(title, data):
+                return title + ".json", dcc.Location(pathname="/data", id="id_no_importa"), dash.no_update, False
+        elif file_end == "py":
+            content_type, content_string = content.split(',')
+            decoded = base64.b64decode(content_string)
+            if import_as_json(filename, decoded.decode('utf-8')):
+                return title + ".json", dcc.Location(pathname="/data", id="id_no_importa"), dash.no_update, False
         else:
             return dash.no_update, dash.no_update, "Ya existe un proyecto con el mismo nombre, por favor cambiar el nombre.", True
     elif trigger["type"] == "project" and n3[trigger["index"]] is not None:

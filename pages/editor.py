@@ -216,7 +216,6 @@ layout = html.Div(
                 ),
                 html.Div(
                     [
-                        dcc.Upload(dbc.Button("IMPORTAR", id="imp_button"), id="imp_button_upload"),
                         dbc.Button("EXPORTAR", id="exp_button")
                     ],
                     className="slider-opt-cont"
@@ -435,23 +434,6 @@ def save_json(n, contents, figures, title, filename):
         if n>0:
             export_from_json(title)
             return 'Se exportó el dashboard en la carpeta de descargas', True, "alert-success"
-    elif ctx.triggered_id == "imp_button_upload":
-        if contents is not None and filename!="":
-            file_end = filename.split(".")[1]
-            title = filename.split(".")[0]
-            if file_end != "py":
-                return 'No se seleccionó un script de Python.', True, "alert-danger"
-            try:
-                content_type, content_string = contents.split(',')
-                decoded = base64.b64decode(content_string)
-                if import_as_json(filename, decoded.decode('utf-8')):
-                    return 'Se importó el archivo correctamente, con el nombre:' + title, True, "alert-success"
-                else:
-                    return 'Error cargando el script seleccionado', True, "alert-danger"
-            except:
-                return 'Error importando el script seleccionado', True, "alert-danger"
-        else:
-            raise PreventUpdate
     elif figures is not None:
         with open("dashboards/" + title) as json_file:
             dash_data = json.load(json_file)
