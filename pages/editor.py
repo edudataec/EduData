@@ -11,6 +11,7 @@ import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 import plotly.express as px
 import pandas as pd
+import statsmodels.api as sm
 
 px_list = getmembers(px, isfunction)
 chartOpts = [
@@ -422,13 +423,11 @@ def updateLayout(n1, d1, figs, load, data, opts, selectChart, children, target, 
     Output("statusAlert", "is_open"),
     Output("alert", "className"),
     Input("exp_button", "n_clicks"),
-    Input("imp_button_upload", "contents"),
     Input("figureStore", "data"),
     State("project_title", "data"),
-    State("imp_button_upload", "filename"),
     prevent_initial_call = True
 )
-def save_json(n, contents, figures, title, filename):
+def save_json(n, figures, title):
     print(figures)
     if ctx.triggered_id == "exp_button":
         if n>0:
