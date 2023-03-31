@@ -83,7 +83,7 @@
 
 
 <!-- Primeros Pasos -->
-## Installation
+## Instalación
 
 1. Clonar el repo
    ```sh
