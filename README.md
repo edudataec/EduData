@@ -117,18 +117,18 @@ This is an example of how to list things you need to use the software and how to
 
 ### Installation
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
+1. Clone the repo
    ```sh
-   git clone https://github.com/CesarCarlierESPOL/EduData.git
+   git clone https://github.com/edudataec/EduData.git
    ```
-3. Install NPM packages
+2. Create a virtual environment (optional)
+3. Install requirements
    ```sh
-   npm install
+   pip install requirements.txt
    ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
+4. Run app
+   ```sh
+   python main.py
    ```
 
 <p align="right">(<a href="#readme-top">Regreso al inicio</a>)</p>
