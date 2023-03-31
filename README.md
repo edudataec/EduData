@@ -57,17 +57,10 @@
   <summary>Table of Contents</summary>
   <ol>
     <li>
-      <a href="#about-the-project">Acerca del proyecto</a>
-      <ul>
-        <li><a href="#built-with">Desarrollado con</a></li>
-      </ul>
+      <a href="#built-with">Desarrollado con</a>
     </li>
     <li>
-      <a href="#getting-started">Primeros Pasos</a>
-      <ul>
-        <li><a href="#Requisitos Previos">Requisitos Previos</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
+      <a href="#installation">Instalación</a>
     </li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
@@ -77,18 +70,6 @@
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
-
-
-
-<!-- Acerca del proyecto -->
-## Acerca del proyecto
-
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
-
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `CesarCarlierESPOL`, `EduData`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `EduData`, `Tablero analítico para la obtención de datos estadísticos y académicos de los cursos de Fundamentos de Programación, realizados en la Escuela Superior Politécnica del Litoral.`
-
-<p align="right">(<a href="#readme-top">Regreso al inicio</a>)</p>
-
 
 
 ### Desarrollado con
@@ -104,16 +85,16 @@ Here's a blank template to get started: To avoid retyping too much info. Do a se
 <!-- Primeros Pasos -->
 ## Installation
 
-1. Clone the repo
+1. Clonar el repo
    ```sh
    git clone https://github.com/edudataec/EduData.git
    ```
-2. Create a virtual environment (optional)
-3. Install requirements
+2. Crear un entorno irtual (opcional)
+3. Instalar requerimientos
    ```sh
    pip install requirements.txt
    ```
-4. Run app
+4. Utilizar la app
    ```sh
    python main.py
    ```
